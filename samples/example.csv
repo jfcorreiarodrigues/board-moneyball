@@ -1,0 +1,6 @@
+Title,Description,Priority,Assignee
+Configurar pipeline CI/CD,Criar workflow de build e testes automáticos,High,joana.silva
+Rever documentação da API,Atualizar exemplos de payload da v2,Average,carlos@empresa.com
+Corrigir bug no login,Utilizadores não conseguem autenticar via SSO,Critical,12
+Preparar demo para cliente,Slides + ambiente de staging,Low,
+Migrar dados legados,Consolidar inputs do Jira,High,maria.costa
