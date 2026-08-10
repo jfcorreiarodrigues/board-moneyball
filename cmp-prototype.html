@@ -132,7 +132,6 @@ tbody tr:hover{background:var(--surface-2)}
 .tl .item{position:relative;padding:0 0 16px 4px}
 .tl .item::before{content:"";position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
 .tl .when{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft)}
-.hashline{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft);word-break:break-all}
 .note{font-size:.82rem;color:var(--ink-soft);display:flex;gap:.5em;align-items:flex-start;margin-top:10px}
 .kbd{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:5px;padding:.05em .4em;background:var(--surface-2)}
 .banner{grid-column:1/3;background:var(--warn-soft);color:var(--warn);font-size:.78rem;font-weight:600;text-align:center;padding:5px;letter-spacing:.02em}
@@ -211,61 +210,46 @@ const I18N={
   banner:"PROTÓTIPO NAVEGÁVEL · inspiração visual dos requisitos — não é o produto final",
   internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
   specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
-  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & parceiros", navRetention:"Prazos de retenção",
-  navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navPerms:"Matriz de permissões",
+  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & parceiros", navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navPerms:"Matriz de permissões",
   secConfig:"Configuração", secAudit:"Consulta & Auditoria", secGov:"Governação",
   reqInView:"Requisitos nesta vista",
   home:"Painel", homeSub:"Visão geral da plataforma. O que vês depende do teu perfil, da empresa (tenant) e do idioma ativos.",
-  kActive:"Textos legais ativos", kPending:"A aguardar o DPO", kIntegrity:"Integridade do diário",
-  mComm:"comunicação", mShare:"partilha", mSubmitted:"submetido hoje", mChain:"cadeia verificada · 0 quebras",
+  kActive:"Textos legais em vigor",
   sessTitle:"Sessão, empresa e idioma", authAs:"Autenticado como", withProfile:"com o perfil",
   fromEntra:"fornecido pelo Entra ID", givesAccess:"Este perfil dá acesso a:",
   ctxNote:"Contexto ativo: empresa", langNote:"idioma", switchHint:"Troca o PERFIL, a EMPRESA e o idioma no topo para veres a UI reagir.",
   legal:"Textos legais", legalSub:"Geridos no dotCMS (fora do CMP). Aqui consulta-se apenas a versão em vigor de cada finalidade (PT e ES).",
-  requisitos:"Requisitos", newDraft:"+ Novo rascunho", submitApp:"Submeter p/ aprovação",
-  colCat:"Categoria", colText:"Texto", colVer:"Versão", colStatus:"Estado", colAuthor:"Autor", colLangs:"Línguas",
-  versions:"Versões", edit:"Editar", publish:"Publicar", archive:"Arquivar",
-  stActive:"Ativo", stPending:"Pendente aprovação", stDraft:"Rascunho", stArchived:"Arquivado",
-  legActive:"Ativo — visível aos clientes", legPending:"Pendente — a aguardar o DPO", legDraft:"Rascunho / Arquivado",
-  publishNote:"A ação Publicar só está ativa no perfil DPO_Admin (US-S2.1-03). Ao publicar, a versão ativa anterior é arquivada (US-S2.1-04). A publicação exige o texto em PT e ES (US-T4-02).",
-  editorTitle:"Editor de rascunho", contentLbl:"Conteúdo do texto legal", save:"Guardar rascunho",
-  noEdit:"Sem permissão de edição neste perfil — o editor está em leitura.",
-  bilingualNote:"Cada versão tem separador PT e ES; ambos são obrigatórios para publicar (US-T4-02).",
+  requisitos:"Requisitos", colCat:"Categoria", colText:"Texto", colVer:"Versão", colStatus:"Estado", colLangs:"Línguas",
   catalog:"Catálogo & parceiros", catalogSub:"Sub-opções e parceiros das categorias UC-01 a UC-05, por empresa (tenant).",
-  addSub:"+ Sub-opção", addPartner:"+ Parceiro", categories:"Categorias",
-  colSubs:"Sub-opções", colPartners:"Parceiros", activate:"Ativar", deactivate:"Desativar", stActiveF:"Ativa", stInactiveF:"Inativa",
-  retention:"Prazos de retenção", retentionSub:"Prazo de conservação por finalidade. Alimenta o cálculo automático da expiração.",
-  colFinality:"Finalidade", colType:"Tipologia", colRetention:"Retenção", months:"meses",
-  retentionNote:"Alterar a retenção requer DPO_Admin. A tipologia (comunicação vs. partilha) condiciona a revogação.",
+  categories:"Categorias",
+  colSubs:"Sub-opções", colPartners:"Parceiros", stActiveF:"Ativa", stInactiveF:"Inativa",
   tComm:"Comunicação", tShare:"Partilha de dados",
   subject:"Consulta de titular", subjectSub:"Histórico completo e imutável das decisões de um titular — para responder a pedidos de exercício de direitos.",
   readonly:"apenas leitura", emailLbl:"E-mail do titular — identificador do registo de consentimento", consult:"Consultar",
   history:"Histórico de decisões", granted:"Concedeu", revoked:"Revogou",
   emailNote:"O e-mail é o identificador por excelência da recolha e, portanto, o identificador do registo de consentimento. Prevalece sempre a decisão mais recente; os registos são imutáveis (US-S3.2-05).",
-  audit:"Diário de auditoria", auditSub:"Registo imutável e encadeado por hashes de operações e acessos, com âmbito por empresa (tenant). Pesquisável por período e administrador.",
-  kRecords:"Registos (30 dias)", kChain:"Integridade da cadeia", kDenied:"Operações negadas",
-  chainOk:"Íntegra", lastCheck:"última verificação há 6 min", deniedM:"tentativas sem permissão",
-  verifyIntegrity:"Verificar integridade", periodPh:"Período: últimos 30 dias", adminPh:"Administrador: todos",
-  events:"Eventos", colWhen:"Quando", colUser:"Utilizador", colProfile:"Perfil", colOp:"Operação", colResult:"Resultado",
-  resOk:"OK", resDenied:"Negado", chainTitle:"Cadeia de integridade",
-  chainNote:"Cada registo depende criptograficamente do anterior — qualquer alteração ou remoção torna-se detetável.",
+  audit:"Diário de auditoria", auditSub:"Registo imutável das operações e dos acessos ao CMP, com âmbito por empresa (tenant). Pesquisável por período, utilizador e perfil.",
+  kRecords:"Registos (30 dias)", kRevokes:"Revogações em nome do titular", kQueries:"Consultas de titular",
+  mOnBehalf:"pedidos por canais não digitais", mQueries:"acessos ao histórico de titulares",
+  periodPh:"Período: últimos 30 dias", userPh:"Utilizador: todos", profilePh:"Perfil: todos",
+  events:"Eventos", colWhen:"Quando", colUser:"Utilizador", colProfile:"Perfil", colOp:"Operação", colDetail:"Referência",
+  auditNote:"O diário responde a quem fez o quê e quando. As operações de escrita competem ao DPO_Admin; os restantes perfis geram sobretudo registos de consulta, conforme a matriz de permissões. Os registos são imutáveis (US-S3.1-01).",
   perms:"Matriz de permissões", permsSub:"Cada perfil só executa as operações que lhe competem — privilégio mínimo, aplicado por empresa (tenant).",
   opXrole:"Operação × Perfil",
   permsNote:"O perfil ativo está a comandar toda a UI: os botões bloqueados (🔒) e os itens de menu ocultos refletem esta matriz. As permissões são avaliadas em conjunto com a empresa (tenant) ativa (US-T3-02).",
   needTip:"Requer:", noPermNav:"Sem permissão para este perfil",
-  opLegalView:"Ver textos legais (versão em vigor)", opCatalog:"Gerir catálogo/parceiros",
-  opRetention:"Definir retenção", opSubject:"Consultar titular", opSubjectEdit:"Editar consentimentos do titular",
-  opUsers:"Gerir perfis de acesso (utilizadores)", opAudit:"Pesquisar auditoria", opIntegrity:"Verificar integridade",
+  opLegalView:"Ver textos legais (versão em vigor)", opCatalog:"Ver catálogo & parceiros",
+  opSubject:"Consultar titular", opSubjectEdit:"Editar consentimentos do titular",
+  opUsers:"Gerir perfis de acesso (utilizadores)", opAudit:"Pesquisar auditoria",
   navUsers:"Gestão de utilizadores",
   legalExternalNote:"Os textos legais são geridos no dotCMS. O CMP não gere conteúdos — apenas consulta a versão em vigor.",
   currentVersions:"Versão em vigor por finalidade", stInForce:"Em vigor",
   legalManagedOut:"A criação, edição e versionamento dos textos ocorrem no dotCMS; o CMP obtém o conteúdo aplicável através da API de conteúdos (S6.1).",
   subjectEditTitle:"Editar consentimentos do titular",
   subjectEditNote:"O DPO_Admin pode revogar consentimentos em nome do titular, para dar resposta a pedidos recebidos por canais não digitais (US-S2.1-10). Cada alteração fica registada no diário de auditoria.",
-  actGrant:"Conceder", actRevoke:"Revogar", onlyDpoEdit:"Só o perfil DPO_Admin pode editar consentimentos; para os restantes perfis esta vista é apenas de leitura.",
-  consentAll:"Aceito todos", cExpand:"Expandir todos", cCollapse:"Colapsar todos",
+  onlyDpoEdit:"Só o perfil DPO_Admin pode editar consentimentos; para os restantes perfis esta vista é apenas de leitura.",
+  cExpand:"Expandir todos", cCollapse:"Colapsar todos",
   cViewText:"Ver texto em vigor", cHideText:"Ocultar texto", cInForce:"Texto em vigor",
-  subjectEditNote2:"Editas como se fosses o cliente: marca as sub-opções, usa a checkbox de topo para toda a categoria, e consulta o texto legal em vigor de cada finalidade.",
   obRevokeOnly:"Em nome do titular, um terceiro só pode retirar consentimentos, nunca conceder (US-S1.2-09). Podes desmarcar para revogar; conceder está bloqueado.",
   obTitle:"Origem e prova do pedido", obChannel:"Canal de origem", obRef:"Referência do pedido",
   obReq:"Obrigatório: nenhuma revogação em nome do titular é aplicada sem canal de origem e referência do pedido (US-S2.1-11).",
@@ -287,61 +271,46 @@ const I18N={
   banner:"PROTOTIPO NAVEGABLE · inspiración visual de los requisitos — no es el producto final",
   internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
   specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
-  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y socios", navRetention:"Plazos de retención",
-  navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navPerms:"Matriz de permisos",
+  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y socios", navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navPerms:"Matriz de permisos",
   secConfig:"Configuración", secAudit:"Consulta y Auditoría", secGov:"Gobernanza",
   reqInView:"Requisitos en esta vista",
   home:"Panel", homeSub:"Visión general de la plataforma. Lo que ves depende de tu perfil, de la empresa (tenant) y del idioma activos.",
-  kActive:"Textos legales activos", kPending:"A la espera del DPO", kIntegrity:"Integridad del diario",
-  mComm:"comunicación", mShare:"compartición", mSubmitted:"enviado hoy", mChain:"cadena verificada · 0 roturas",
+  kActive:"Textos legales vigentes",
   sessTitle:"Sesión, empresa e idioma", authAs:"Autenticado como", withProfile:"con el perfil",
   fromEntra:"proporcionado por Entra ID", givesAccess:"Este perfil da acceso a:",
   ctxNote:"Contexto activo: empresa", langNote:"idioma", switchHint:"Cambia el PERFIL, la EMPRESA y el idioma arriba para ver la UI reaccionar.",
   legal:"Textos legales", legalSub:"Gestionados en dotCMS (fuera del CMP). Aquí solo se consulta la versión vigente de cada finalidad (PT y ES).",
-  requisitos:"Requisitos", newDraft:"+ Nuevo borrador", submitApp:"Enviar para aprobación",
-  colCat:"Categoría", colText:"Texto", colVer:"Versión", colStatus:"Estado", colAuthor:"Autor", colLangs:"Idiomas",
-  versions:"Versiones", edit:"Editar", publish:"Publicar", archive:"Archivar",
-  stActive:"Activo", stPending:"Pendiente de aprobación", stDraft:"Borrador", stArchived:"Archivado",
-  legActive:"Activo — visible para los clientes", legPending:"Pendiente — a la espera del DPO", legDraft:"Borrador / Archivado",
-  publishNote:"La acción Publicar solo está activa en el perfil DPO_Admin (US-S2.1-03). Al publicar, la versión activa anterior se archiva (US-S2.1-04). La publicación exige el texto en PT y ES (US-T4-02).",
-  editorTitle:"Editor de borrador", contentLbl:"Contenido del texto legal", save:"Guardar borrador",
-  noEdit:"Sin permiso de edición en este perfil — el editor está en modo lectura.",
-  bilingualNote:"Cada versión tiene pestaña PT y ES; ambos son obligatorios para publicar (US-T4-02).",
+  requisitos:"Requisitos", colCat:"Categoría", colText:"Texto", colVer:"Versión", colStatus:"Estado", colLangs:"Idiomas",
   catalog:"Catálogo y socios", catalogSub:"Sub-opciones y socios de las categorías UC-01 a UC-05, por empresa (tenant).",
-  addSub:"+ Sub-opción", addPartner:"+ Socio", categories:"Categorías",
-  colSubs:"Sub-opciones", colPartners:"Socios", activate:"Activar", deactivate:"Desactivar", stActiveF:"Activa", stInactiveF:"Inactiva",
-  retention:"Plazos de retención", retentionSub:"Plazo de conservación por finalidad. Alimenta el cálculo automático de la expiración.",
-  colFinality:"Finalidad", colType:"Tipología", colRetention:"Retención", months:"meses",
-  retentionNote:"Cambiar la retención requiere DPO_Admin. La tipología (comunicación vs. compartición) condiciona la revocación.",
+  categories:"Categorías",
+  colSubs:"Sub-opciones", colPartners:"Socios", stActiveF:"Activa", stInactiveF:"Inactiva",
   tComm:"Comunicación", tShare:"Compartición de datos",
   subject:"Consulta de titular", subjectSub:"Historial completo e inmutable de las decisiones de un titular — para responder a solicitudes de ejercicio de derechos.",
   readonly:"solo lectura", emailLbl:"Correo del titular — identificador del registro de consentimiento", consult:"Consultar",
   history:"Historial de decisiones", granted:"Concedió", revoked:"Revocó",
   emailNote:"El correo es el identificador por excelencia de la recogida y, por tanto, el identificador del registro de consentimiento. Prevalece siempre la decisión más reciente; los registros son inmutables (US-S3.2-05).",
-  audit:"Diario de auditoría", auditSub:"Registro inmutable y encadenado por hashes de operaciones y accesos, con ámbito por empresa (tenant). Consultable por periodo y administrador.",
-  kRecords:"Registros (30 días)", kChain:"Integridad de la cadena", kDenied:"Operaciones denegadas",
-  chainOk:"Íntegra", lastCheck:"última verificación hace 6 min", deniedM:"intentos sin permiso",
-  verifyIntegrity:"Verificar integridad", periodPh:"Periodo: últimos 30 días", adminPh:"Administrador: todos",
-  events:"Eventos", colWhen:"Cuándo", colUser:"Usuario", colProfile:"Perfil", colOp:"Operación", colResult:"Resultado",
-  resOk:"OK", resDenied:"Denegado", chainTitle:"Cadena de integridad",
-  chainNote:"Cada registro depende criptográficamente del anterior — cualquier alteración o eliminación se vuelve detectable.",
+  audit:"Diario de auditoría", auditSub:"Registro inmutable de las operaciones y de los accesos al CMP, con ámbito por empresa (tenant). Consultable por periodo, usuario y perfil.",
+  kRecords:"Registros (30 días)", kRevokes:"Revocaciones en nombre del titular", kQueries:"Consultas de titular",
+  mOnBehalf:"solicitudes por canales no digitales", mQueries:"accesos al historial de titulares",
+  periodPh:"Periodo: últimos 30 días", userPh:"Usuario: todos", profilePh:"Perfil: todos",
+  events:"Eventos", colWhen:"Cuándo", colUser:"Usuario", colProfile:"Perfil", colOp:"Operación", colDetail:"Referencia",
+  auditNote:"El diario responde a quién hizo qué y cuándo. Las operaciones de escritura corresponden al DPO_Admin; los demás perfiles generan sobre todo registros de consulta, según la matriz de permisos. Los registros son inmutables (US-S3.1-01).",
   perms:"Matriz de permisos", permsSub:"Cada perfil solo ejecuta las operaciones que le competen — privilegio mínimo, aplicado por empresa (tenant).",
   opXrole:"Operación × Perfil",
   permsNote:"El perfil activo comanda toda la UI: los botones bloqueados (🔒) y los elementos de menú ocultos reflejan esta matriz. Los permisos se evalúan junto con la empresa (tenant) activa (US-T3-02).",
   needTip:"Requiere:", noPermNav:"Sin permiso para este perfil",
-  opLegalView:"Ver textos legales (versión vigente)", opCatalog:"Gestionar catálogo/socios",
-  opRetention:"Definir retención", opSubject:"Consultar titular", opSubjectEdit:"Editar consentimientos del titular",
-  opUsers:"Gestionar perfiles de acceso (usuarios)", opAudit:"Buscar auditoría", opIntegrity:"Verificar integridad",
+  opLegalView:"Ver textos legales (versión vigente)", opCatalog:"Ver catálogo y socios",
+  opSubject:"Consultar titular", opSubjectEdit:"Editar consentimientos del titular",
+  opUsers:"Gestionar perfiles de acceso (usuarios)", opAudit:"Buscar auditoría",
   navUsers:"Gestión de usuarios",
   legalExternalNote:"Los textos legales se gestionan en dotCMS. El CMP no gestiona contenidos — solo consulta la versión vigente.",
   currentVersions:"Versión vigente por finalidad", stInForce:"Vigente",
   legalManagedOut:"La creación, edición y versionado de los textos ocurren en dotCMS; el CMP obtiene el contenido aplicable a través de la API de contenidos (S6.1).",
   subjectEditTitle:"Editar consentimientos del titular",
   subjectEditNote:"El DPO_Admin puede revocar consentimientos en nombre del titular, para atender solicitudes recibidas por canales no digitales (US-S2.1-10). Cada cambio queda registrado en el diario de auditoría.",
-  actGrant:"Conceder", actRevoke:"Revocar", onlyDpoEdit:"Solo el perfil DPO_Admin puede editar consentimientos; para los demás perfiles esta vista es de solo lectura.",
-  consentAll:"Acepto todos", cExpand:"Expandir todos", cCollapse:"Colapsar todos",
+  onlyDpoEdit:"Solo el perfil DPO_Admin puede editar consentimientos; para los demás perfiles esta vista es de solo lectura.",
+  cExpand:"Expandir todos", cCollapse:"Colapsar todos",
   cViewText:"Ver texto vigente", cHideText:"Ocultar texto", cInForce:"Texto vigente",
-  subjectEditNote2:"Editas como si fueras el cliente: marca las sub-opciones, usa la casilla superior para toda la categoría, y consulta el texto legal vigente de cada finalidad.",
   obRevokeOnly:"En nombre del titular, un tercero solo puede retirar consentimientos, nunca conceder (US-S1.2-09). Puedes desmarcar para revocar; conceder está bloqueado.",
   obTitle:"Origen y prueba de la solicitud", obChannel:"Canal de origen", obRef:"Referencia de la solicitud",
   obReq:"Obligatorio: ninguna revocación en nombre del titular se aplica sin canal de origen y referencia de la solicitud (US-S2.1-11).",
@@ -368,11 +337,11 @@ const ROLES={
 const PERMS={
   // Textos legais: geridos fora da plataforma -> apenas leitura da versão em vigor
   "legal.view":["DPO_Admin","Business_Admin","Security_Auditor"],
-  "catalog.view":["DPO_Admin","Business_Admin"],"catalog.manage":["Business_Admin"],
+  "catalog.view":["DPO_Admin","Business_Admin"],
   "subject.view":["DPO_Admin","Security_Auditor"],
   // DPO_Admin: edita os consentimentos de um titular e gere os perfis de acesso ao CMP
   "subject.edit":["DPO_Admin"],"users.manage":["DPO_Admin"],
-  "audit.view":["DPO_Admin","Security_Auditor"],"audit.integrity":["Security_Auditor","DPO_Admin"],
+  "audit.view":["DPO_Admin","Security_Auditor"],
   "perms.view":["DPO_Admin","Business_Admin","Security_Auditor"],
   "perms.manage":["DPO_Admin"], // US-S2.1-14: DPO gere a matriz operação × perfil
 };
@@ -418,28 +387,39 @@ const CATS={
   {code:"UC-02",label:{pt:"Partilha logística com parceiros",es:"Compartición logística con socios"},sub:3,partners:2,active:true},
  ],
 };
-const RETENTION={
- "CTT":[
-  {cat:"UC-01",fin:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},tipo:"comm",meses:24},
-  {cat:"UC-02",fin:{pt:"Partilha · Telecomunicações",es:"Compartición · Telecomunicaciones"},tipo:"share",meses:36},
-  {cat:"UC-03",fin:{pt:"Personalização de ofertas",es:"Personalización de ofertas"},tipo:"comm",meses:18},
-  {cat:"UC-05",fin:{pt:"Fidelização",es:"Fidelización"},tipo:"comm",meses:24},
- ],
- "CTT Express":[
-  {cat:"UC-01",fin:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},tipo:"comm",meses:24},
-  {cat:"UC-02",fin:{pt:"Partilha logística",es:"Compartición logística"},tipo:"share",meses:36},
- ],
-};
+// Operações realmente possíveis: escrita pelo DPO_Admin; os restantes perfis consultam.
 const AUDIT={
  "CTT":[
-  {ts:"2026-07-28 14:02",user:"Marta Antunes",role:"Business_Admin",op:{pt:'Submeteu rascunho UC-03 v0.4.0 para aprovação',es:'Envió borrador UC-03 v0.4.0 para aprobación'},ok:true},
-  {ts:"2026-07-28 11:47",user:"João Rodrigues",role:"DPO_Admin",op:{pt:"Publicou UC-02 v1.0.0 · arquivou v0.9.0",es:"Publicó UC-02 v1.0.0 · archivó v0.9.0"},ok:true},
-  {ts:"2026-07-27 18:20",user:"Marta Antunes",role:"Business_Admin",op:{pt:"Tentou publicar UC-03 — negado por falta de permissão",es:"Intentó publicar UC-03 — denegado por falta de permiso"},ok:false},
-  {ts:"2026-07-27 09:15",user:"João Rodrigues",role:"DPO_Admin",op:{pt:"Mudou de empresa: CTT Express → CTT",es:"Cambió de empresa: CTT Express → CTT"},ok:true},
+  {ts:"2026-08-10 15:12",user:"João Rodrigues",role:"DPO_Admin",ref:"REQ-2026-000123 · Telefone",
+   op:{pt:"Revogou UC-01 · Promoções e campanhas em nome do titular cliente.exemplo@ctt.pt",
+       es:"Revocó UC-01 · Promociones y campañas en nombre del titular cliente.exemplo@ctt.pt"}},
+  {ts:"2026-08-10 11:47",user:"João Rodrigues",role:"DPO_Admin",ref:"",
+   op:{pt:"Consultou o histórico de consentimentos de cliente.exemplo@ctt.pt",
+       es:"Consultó el historial de consentimientos de cliente.exemplo@ctt.pt"}},
+  {ts:"2026-08-09 17:05",user:"Rui Marques",role:"Security_Auditor",ref:"",
+   op:{pt:"Pesquisou o diário de auditoria — últimos 30 dias",
+       es:"Buscó en el diario de auditoría — últimos 30 días"}},
+  {ts:"2026-08-09 09:30",user:"João Rodrigues",role:"DPO_Admin",ref:"ana.sousa@cttexpress.com",
+   op:{pt:"Atribuiu o perfil Business_Admin a um utilizador interno",
+       es:"Asignó el perfil Business_Admin a un usuario interno"}},
+  {ts:"2026-08-08 16:20",user:"João Rodrigues",role:"DPO_Admin",ref:"subject.view · Security_Auditor",
+   op:{pt:"Ativou a operação «Consultar titular» para o perfil Security_Auditor",
+       es:"Activó la operación «Consultar titular» para el perfil Security_Auditor"}},
+  {ts:"2026-08-08 10:02",user:"Marta Antunes",role:"Business_Admin",ref:"",
+   op:{pt:"Consultou o catálogo de finalidades e parceiros",
+       es:"Consultó el catálogo de finalidades y socios"}},
+  {ts:"2026-08-07 14:15",user:"João Rodrigues",role:"DPO_Admin",ref:"",
+   op:{pt:"Mudou de empresa: CTT Express → CTT",es:"Cambió de empresa: CTT Express → CTT"}},
  ],
  "CTT Express":[
-  {ts:"2026-07-28 10:05",user:"Rui Marques",role:"Security_Auditor",op:{pt:"Verificou integridade da cadeia — íntegra",es:"Verificó integridad de la cadena — íntegra"},ok:true},
-  {ts:"2026-07-27 16:40",user:"Marta Antunes",role:"Business_Admin",op:{pt:"Criou rascunho UC-02 v0.3.0",es:"Creó borrador UC-02 v0.3.0"},ok:true},
+  {ts:"2026-08-10 12:40",user:"João Rodrigues",role:"DPO_Admin",ref:"REQ-2026-000131 · Balcão",
+   op:{pt:"Revogou UC-02 · Parceiros logísticos em nome do titular",
+       es:"Revocó UC-02 · Socios logísticos en nombre del titular"}},
+  {ts:"2026-08-09 15:18",user:"Rui Marques",role:"Security_Auditor",ref:"",
+   op:{pt:"Pesquisou o diário de auditoria — últimos 7 dias",
+       es:"Buscó en el diario de auditoría — últimos 7 días"}},
+  {ts:"2026-08-08 11:05",user:"Ana Sousa",role:"Business_Admin",ref:"UC-01 v1.0.0 · dotCMS",
+   op:{pt:"Consultou o texto legal em vigor",es:"Consultó el texto legal vigente"}},
  ],
 };
 const SUBJECT=[
@@ -545,11 +525,6 @@ function renderNav(){
 function go(id){state.view=id;renderNav();renderView();}
 
 /* ============ helpers ============ */
-function statusPill(st){return{
-  "Ativo":`<span class="pill ok"><span class="dot" style="background:var(--ok)"></span>${t("stActive")}</span>`,
-  "Pendente":`<span class="pill warn"><span class="dot" style="background:var(--warn)"></span>${t("stPending")}</span>`,
-  "Rascunho":`<span class="pill mute">${t("stDraft")}</span>`,
-  "Arquivado":`<span class="pill mute" style="opacity:.7">${t("stArchived")}</span>`}[st]||st;}
 function actBtn(label,op,cls=""){const ok=can(op);
   return `<button class="btn ${cls}" ${ok?"":"disabled"} title="${ok?"":t("needTip")+" "+PERMS[op].join(" · ")}">${ok?"":'🔒 '}${label}</button>`;}
 function head(title,sub,crumb){return `<div class="crumbs">CMP · ${crumb} · <span class="tchip">🏢 ${state.tenant}</span></div>
@@ -697,29 +672,28 @@ const VIEWS={
    :`<div class="note" style="margin-top:12px">🔒 ${t("onlyDpoEdit")}</div>`);
  },
  audit(){
-  const rows=AUDIT[state.tenant];
+  const rows=AUDIT[state.tenant],ctt=state.tenant==="CTT";
   return head(t("audit"),t("auditSub"),t("secAudit")+" / "+t("audit"))
-  +`<div class="reqbar"><span class="lbl">${t("requisitos")}</span><span class="us">US-S3.2-01</span><span class="us">US-S3.1-01/02</span><span class="us">US-T3-02</span></div>
+  +`<div class="reqbar"><span class="lbl">${t("requisitos")}</span><span class="us">US-S3.2-01</span><span class="us">US-T3-02</span></div>
   <div class="grid g3" style="margin-bottom:16px">
-    <div class="card stat"><div class="k">${t("kRecords")}</div><div class="v">${state.tenant==="CTT"?"1 284":"316"}</div><div class="m">🏢 ${state.tenant}</div></div>
-    <div class="card stat"><div class="k">${t("kChain")}</div><div class="v" style="color:var(--ok)">${t("chainOk")}</div><div class="m">${t("lastCheck")}</div></div>
-    <div class="card stat"><div class="k">${t("kDenied")}</div><div class="v" style="color:var(--danger)">${state.tenant==="CTT"?"3":"0"}</div><div class="m">${t("deniedM")}</div></div>
+    <div class="card stat"><div class="k">${t("kRecords")}</div><div class="v">${ctt?"1 284":"316"}</div><div class="m">🏢 ${state.tenant}</div></div>
+    <div class="card stat"><div class="k">${t("kRevokes")}</div><div class="v">${ctt?"27":"6"}</div><div class="m">${t("mOnBehalf")}</div></div>
+    <div class="card stat"><div class="k">${t("kQueries")}</div><div class="v">${ctt?"143":"38"}</div><div class="m">${t("mQueries")}</div></div>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
     <input class="field" style="min-width:170px" placeholder="${t("periodPh")}">
-    <input class="field" style="min-width:170px" placeholder="${t("adminPh")}"></div>
+    <input class="field" style="min-width:170px" placeholder="${t("userPh")}">
+    <input class="field" style="min-width:150px" placeholder="${t("profilePh")}"></div>
   <div class="card panel"><h3>${t("events")} <span class="us">S3.2-01</span></h3><div class="tabwrap"><table>
-   <thead><tr><th>${t("colWhen")}</th><th>${t("colUser")}</th><th>${t("colProfile")}</th><th>${t("colOp")}</th><th>${t("colResult")}</th></tr></thead>
+   <thead><tr><th>${t("colWhen")}</th><th>${t("colUser")}</th><th>${t("colProfile")}</th><th>${t("colOp")}</th><th>${t("colDetail")}</th></tr></thead>
    <tbody>${rows.map(a=>`<tr><td class="mono">${a.ts}</td><td>${a.user}</td><td class="tag">${a.role}</td><td>${L(a.op)}</td>
-     <td>${a.ok?'<span class="pill ok">'+t("resOk")+'</span>':'<span class="pill danger">'+t("resDenied")+'</span>'}</td></tr>`).join("")}</tbody></table></div></div>
-  <div class="card panel" style="margin-top:16px"><h3>${t("chainTitle")} <span class="us">S3.1-01/02</span></h3><div class="body">
-    <div class="hashline">#1284  sha256:9f2a…c71b  ⟵  #1283  sha256:41de…88a0  ⟵  #1282  sha256:0b7c…3e5f</div>
-    <div class="note" style="color:var(--ok)">✓ ${t("chainNote")}</div></div></div>`;
+     <td class="tag">${a.ref?'<span class="mono">'+a.ref+'</span>':"—"}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="note">🗒️ ${t("auditNote")}</div>`;
  },
  perms(){
-  const ops=[["opLegalView","legal.view"],["opCatalog","catalog.manage"],
+  const ops=[["opLegalView","legal.view"],["opCatalog","catalog.view"],
    ["opSubject","subject.view"],["opSubjectEdit","subject.edit"],["opUsers","users.manage"],
-   ["opAudit","audit.view"],["opIntegrity","audit.integrity"]];
+   ["opAudit","audit.view"]];
   const roles=Object.keys(ROLES);
   const edit=can("perms.manage");
   const cell=(op,r)=>{const on=PERMS[op].includes(r);
