@@ -1,0 +1,743 @@
+<title>CMP · Frontend interno — protótipo navegável</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f8fa; --ink:#16212b; --ink-soft:#5a6b7a;
+  --line:#dbe2e8; --line-strong:#c3ced8;
+  --accent:#0e7c86; --accent-strong:#0b5e66; --accent-soft:#e2f1f2;
+  --ok:#1f9d6b; --ok-soft:#e3f4ec; --warn:#b9750f; --warn-soft:#fbefdb; --danger:#c4453d; --danger-soft:#f8e3e1;
+  --shadow:0 1px 2px rgba(16,33,43,.06),0 8px 24px rgba(16,33,43,.06);
+  --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --radius:10px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ground:#0d141b; --surface:#131d26; --surface-2:#0f1820; --ink:#e6edf3; --ink-soft:#93a3b1;
+  --line:#233240; --line-strong:#324454; --accent:#2aa7b0; --accent-strong:#5cc4cb; --accent-soft:#123037;
+  --ok:#39b581; --ok-soft:#0f2c22; --warn:#d99a3c; --warn-soft:#2e2410; --danger:#e06a62; --danger-soft:#331917;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --ground:#0d141b; --surface:#131d26; --surface-2:#0f1820; --ink:#e6edf3; --ink-soft:#93a3b1;
+  --line:#233240; --line-strong:#324454; --accent:#2aa7b0; --accent-strong:#5cc4cb; --accent-soft:#123037;
+  --ok:#39b581; --ok-soft:#0f2c22; --warn:#d99a3c; --warn-soft:#2e2410; --danger:#e06a62; --danger-soft:#331917;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+:root[data-theme="light"]{
+  --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f8fa; --ink:#16212b; --ink-soft:#5a6b7a;
+  --line:#dbe2e8; --line-strong:#c3ced8; --accent:#0e7c86; --accent-strong:#0b5e66; --accent-soft:#e2f1f2;
+  --ok:#1f9d6b; --ok-soft:#e3f4ec; --warn:#b9750f; --warn-soft:#fbefdb; --danger:#c4453d; --danger-soft:#f8e3e1;
+  --shadow:0 1px 2px rgba(16,33,43,.06),0 8px 24px rgba(16,33,43,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+h1,h2,h3{margin:0;text-wrap:balance}
+a{color:var(--accent-strong)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.pill{display:inline-flex;align-items:center;gap:.35em;padding:.14em .6em;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.danger{background:var(--danger-soft);color:var(--danger)}
+.pill.mute{background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-strong)}
+.us{font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--accent-strong);background:var(--accent-soft);padding:.12em .5em;border-radius:6px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:.5em .9em;border-radius:8px;font-weight:600;font-size:.86rem;display:inline-flex;align-items:center;gap:.45em;transition:background .15s,border-color .15s,transform .05s}
+.btn:hover{background:var(--surface-2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-strong)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn[disabled]:hover{background:var(--surface)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.tag{font-size:.72rem;color:var(--ink-soft)}
+#login{min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(1200px 600px at 80% -10%, color-mix(in srgb,var(--accent) 22%, transparent), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, color-mix(in srgb,var(--accent) 14%, transparent), transparent 60%), var(--ground);}
+.login-card{width:min(430px,100%);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:34px 32px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent-strong));display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.05rem;letter-spacing:.02em}
+.brand small{display:block;color:var(--ink-soft);font-size:.78rem}
+.langpick{display:flex;gap:6px;margin-bottom:16px}
+.langpick button{border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink-soft);border-radius:7px;padding:.25em .7em;font-size:.76rem;font-weight:700}
+.langpick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.idp{display:flex;align-items:center;gap:12px;width:100%;justify-content:center;padding:.8em 1em;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);font-weight:700;color:var(--ink);font-size:.95rem;margin-top:6px}
+.idp:hover{border-color:var(--accent)}
+.idp .ms{display:inline-grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;width:18px;height:18px;gap:2px}
+.idp .ms i:nth-child(1){background:#f25022}.idp .ms i:nth-child(2){background:#7fba00}
+.idp .ms i:nth-child(3){background:#00a4ef}.idp .ms i:nth-child(4){background:#ffb900}
+.login-foot{margin-top:20px;font-size:.78rem;color:var(--ink-soft);display:flex;gap:.5em;align-items:flex-start}
+#app{display:none;min-height:100vh;grid-template-columns:248px 1fr;grid-template-rows:auto auto 1fr}
+#app.on{display:grid}
+.topbar{grid-column:1/3;display:flex;align-items:center;gap:14px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.topbar .brand{margin:0}
+.topbar .logo{width:32px;height:32px;border-radius:8px;font-size:.85rem}
+.spacer{flex:1}
+.toolbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);padding:.42em .7em;border-radius:8px;font-size:.8rem;font-weight:600;display:inline-flex;gap:.45em;align-items:center}
+.toolbtn:hover{color:var(--ink);border-color:var(--line-strong)}
+.switch{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px 8px}
+.switch label{font-size:.68rem;color:var(--ink-soft);font-weight:700;letter-spacing:.04em}
+.switch select{border:none;background:transparent;color:var(--ink);font-weight:700;font-size:.85rem;padding:.3em;border-radius:6px}
+.langtog{display:flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+.langtog button{border:none;background:var(--surface);color:var(--ink-soft);padding:.35em .6em;font-size:.76rem;font-weight:800}
+.langtog button.on{background:var(--accent);color:#fff}
+.who{display:flex;align-items:center;gap:9px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.78rem}
+.who small{display:block;color:var(--ink-soft);font-size:.72rem;line-height:1.1}
+.side{background:var(--surface-2);border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.side .sec{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin:14px 10px 4px}
+.nav{display:flex;align-items:center;gap:10px;padding:.6em .7em;border-radius:9px;border:1px solid transparent;color:var(--ink);font-weight:600;font-size:.9rem;text-align:left;background:none;width:100%}
+.nav:hover{background:var(--surface)}
+.nav.active{background:var(--surface);border-color:var(--line);box-shadow:var(--shadow)}
+.nav.active .ic{color:var(--accent)}
+.nav .ic{width:18px;text-align:center;color:var(--ink-soft)}
+.nav .rq{margin-left:auto}
+.nav[disabled]{opacity:.4;cursor:not-allowed}
+main{padding:26px 30px 60px;overflow-x:hidden}
+.page-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.page-head h1{font-size:1.5rem;letter-spacing:-.01em}
+.page-head .sub{color:var(--ink-soft);font-size:.9rem;margin-top:3px;max-width:72ch}
+.crumbs{font-size:.76rem;color:var(--ink-soft);margin-bottom:10px}
+.reqbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 22px;padding:12px 14px;border:1px dashed var(--line-strong);border-radius:10px;background:color-mix(in srgb,var(--accent-soft) 40%,transparent)}
+.reqbar .lbl{font-size:.72rem;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em}
+body.nospec .reqbar,body.nospec .us,body.nospec .req-inline{display:none!important}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:900px){.g3,.g2{grid-template-columns:1fr}}
+.stat{padding:16px 18px}
+.stat .k{font-size:.78rem;color:var(--ink-soft);font-weight:600}
+.stat .v{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .m{font-size:.76rem;color:var(--ink-soft);margin-top:4px}
+.panel{padding:0;overflow:hidden}
+.panel h3{padding:14px 18px;border-bottom:1px solid var(--line);font-size:.98rem;display:flex;align-items:center;gap:10px}
+.panel h3 .us{margin-left:auto}
+.panel .body{padding:16px 18px}
+table{width:100%;border-collapse:collapse;font-size:.87rem}
+th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);font-weight:700;padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:11px 14px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+.tabwrap{overflow-x:auto}
+.mono{font-family:var(--mono);font-size:.82rem}
+.rowact{display:flex;gap:6px;justify-content:flex-end}
+.matrix td,.matrix th{text-align:center}
+.matrix td:first-child,.matrix th:first-child{text-align:left;font-weight:600}
+.chk{color:var(--ok);font-weight:800}.no{color:var(--line-strong)}
+.role-h{font-family:var(--mono);font-size:.78rem}
+.tl{position:relative;padding-left:22px}
+.tl::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.tl .item{position:relative;padding:0 0 16px 4px}
+.tl .item::before{content:"";position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.tl .when{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft)}
+.hashline{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft);word-break:break-all}
+.note{font-size:.82rem;color:var(--ink-soft);display:flex;gap:.5em;align-items:flex-start;margin-top:10px}
+.kbd{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:5px;padding:.05em .4em;background:var(--surface-2)}
+.banner{grid-column:1/3;background:var(--warn-soft);color:var(--warn);font-size:.78rem;font-weight:600;text-align:center;padding:5px;letter-spacing:.02em}
+.req-inline{font-size:.78rem;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px;display:flex;gap:.6em;flex-wrap:wrap;align-items:baseline}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:.78rem;font-weight:600;color:var(--ink-soft)}
+.field input,.field select,.field textarea{border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink);border-radius:8px;padding:.55em .7em;font-family:inherit;font-size:.9rem}
+.editor{border:1px solid var(--line-strong);border-radius:8px;background:var(--surface-2);min-height:96px;padding:12px 14px;font-size:.88rem;line-height:1.6}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;color:var(--ink-soft);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:.4em}
+.langtabs{display:flex;gap:6px;margin-bottom:10px}
+.langtabs .lt{border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink-soft);border-radius:7px 7px 0 0;padding:.3em .8em;font-size:.78rem;font-weight:700}
+.langtabs .lt.on{background:var(--surface);color:var(--accent-strong);border-bottom-color:var(--surface)}
+.tchip{display:inline-flex;align-items:center;gap:.4em;font-weight:700}
+/* editor de consentimentos (vista de cliente) */
+.ctools{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;margin-bottom:12px;font-size:.86rem}
+.ctools .sep{flex:1}
+.cb{width:19px;height:19px;border:2px solid var(--line-strong);border-radius:5px;display:inline-grid;place-items:center;cursor:pointer;flex:none;color:#fff;font-size:12px;font-weight:800;line-height:1;background:var(--surface);transition:background .12s,border-color .12s}
+.cb.on,.cb.ind{background:var(--accent);border-color:var(--accent)}
+.cbrow{display:inline-flex;align-items:center;gap:9px;cursor:pointer}
+.ccat{border:1px solid var(--line);border-radius:9px;margin-bottom:10px;overflow:hidden;background:var(--surface)}
+.ccat-h{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.ccat-name{font-weight:600;flex:1}
+.exp{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:.85rem;width:16px;padding:0}
+.linklike{border:none;background:none;color:var(--accent-strong);cursor:pointer;font-weight:600;font-size:.78rem;text-decoration:underline;white-space:nowrap}
+.ctext{padding:10px 14px 12px 42px;background:var(--surface-2);border-top:1px solid var(--line);font-size:.86rem;line-height:1.55}
+.ctext-h{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;margin-bottom:5px;display:flex;gap:8px;align-items:center}
+.csubs{padding:6px 12px 12px 42px;background:var(--surface-2);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.csub{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9rem}
+</style>
+
+<section id="login">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">CMP</div>
+      <div><strong id="lg-title">Gestão de Consentimentos</strong><small id="lg-sub">Frontend interno · Grupo CTT</small></div>
+    </div>
+    <div class="langpick">
+      <button id="lp-pt" class="on" onclick="setLang('pt')">PT</button>
+      <button id="lp-es" onclick="setLang('es')">ES</button>
+    </div>
+    <p id="lg-access" style="color:var(--ink-soft);font-size:.9rem;margin:0 0 4px"></p>
+    <button class="idp" onclick="signIn()"><span class="ms"><i></i><i></i><i></i><i></i></span><span id="lg-btn"></span></button>
+    <div class="login-foot"><span class="us">US-T1-01</span><span id="lg-note"></span></div>
+  </div>
+</section>
+
+<div id="app">
+  <div class="banner" id="banner"></div>
+  <header class="topbar">
+    <div class="brand"><div class="logo">CMP</div><strong style="font-size:.95rem" id="tb-title">Gestão de Consentimentos</strong></div>
+    <span class="pill acc" id="tb-internal">Frontend interno</span>
+    <div class="spacer"></div>
+    <button class="toolbtn" id="specBtn" onclick="toggleSpec()"></button>
+    <button class="toolbtn" onclick="toggleTheme()">◐ <span id="tb-theme">Tema</span></button>
+    <div class="langtog"><button id="tg-pt" class="on" onclick="setLang('pt')">PT</button><button id="tg-es" onclick="setLang('es')">ES</button></div>
+    <div class="switch"><label id="tb-tenant">EMPRESA</label>
+      <select id="tenant" onchange="setTenant(this.value)"><option>CTT</option><option>CTT Express</option></select></div>
+    <div class="switch"><label id="tb-profile">PERFIL</label>
+      <select id="role" onchange="setRole(this.value)"></select></div>
+    <div class="who"><div class="avatar" id="av">JR</div>
+      <div><strong style="font-size:.82rem" id="whoName">João Rodrigues</strong><small id="whoRole">DPO_Admin</small></div></div>
+  </header>
+  <aside class="side" id="side"></aside>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ============ i18n ============ */
+const I18N={
+ pt:{
+  brandTitle:"Gestão de Consentimentos", brandSub:"Frontend interno · Grupo CTT",
+  loginAccess:"Acesso restrito a colaboradores. A identidade e os perfis são fornecidos pelo diretório corporativo.",
+  loginBtn:"Entrar com Microsoft Entra ID",
+  loginNote:"Autenticação federada (SSO) com o IdP corporativo — sem credenciais próprias da aplicação; os perfis vêm do Entra ID.",
+  banner:"PROTÓTIPO NAVEGÁVEL · inspiração visual dos requisitos — não é o produto final",
+  internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
+  specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
+  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & parceiros", navRetention:"Prazos de retenção",
+  navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navPerms:"Matriz de permissões",
+  secConfig:"Configuração", secAudit:"Consulta & Auditoria", secGov:"Governação",
+  reqInView:"Requisitos nesta vista",
+  home:"Painel", homeSub:"Visão geral da plataforma. O que vês depende do teu perfil, da empresa (tenant) e do idioma ativos.",
+  kActive:"Textos legais ativos", kPending:"A aguardar o DPO", kIntegrity:"Integridade do diário",
+  mComm:"comunicação", mShare:"partilha", mSubmitted:"submetido hoje", mChain:"cadeia verificada · 0 quebras",
+  sessTitle:"Sessão, empresa e idioma", authAs:"Autenticado como", withProfile:"com o perfil",
+  fromEntra:"fornecido pelo Entra ID", givesAccess:"Este perfil dá acesso a:",
+  ctxNote:"Contexto ativo: empresa", langNote:"idioma", switchHint:"Troca o PERFIL, a EMPRESA e o idioma no topo para veres a UI reagir.",
+  legal:"Textos legais", legalSub:"Geridos no dotCMS (fora do CMP). Aqui consulta-se apenas a versão em vigor de cada finalidade (PT e ES).",
+  requisitos:"Requisitos", newDraft:"+ Novo rascunho", submitApp:"Submeter p/ aprovação",
+  colCat:"Categoria", colText:"Texto", colVer:"Versão", colStatus:"Estado", colAuthor:"Autor", colLangs:"Línguas",
+  versions:"Versões", edit:"Editar", publish:"Publicar", archive:"Arquivar",
+  stActive:"Ativo", stPending:"Pendente aprovação", stDraft:"Rascunho", stArchived:"Arquivado",
+  legActive:"Ativo — visível aos clientes", legPending:"Pendente — a aguardar o DPO", legDraft:"Rascunho / Arquivado",
+  publishNote:"A ação Publicar só está ativa no perfil DPO_Admin (US-S2.1-03). Ao publicar, a versão ativa anterior é arquivada (US-S2.1-04). A publicação exige o texto em PT e ES (US-T4-02).",
+  editorTitle:"Editor de rascunho", contentLbl:"Conteúdo do texto legal", save:"Guardar rascunho",
+  noEdit:"Sem permissão de edição neste perfil — o editor está em leitura.",
+  bilingualNote:"Cada versão tem separador PT e ES; ambos são obrigatórios para publicar (US-T4-02).",
+  catalog:"Catálogo & parceiros", catalogSub:"Sub-opções e parceiros das categorias UC-01 a UC-05, por empresa (tenant).",
+  addSub:"+ Sub-opção", addPartner:"+ Parceiro", categories:"Categorias",
+  colSubs:"Sub-opções", colPartners:"Parceiros", activate:"Ativar", deactivate:"Desativar", stActiveF:"Ativa", stInactiveF:"Inativa",
+  retention:"Prazos de retenção", retentionSub:"Prazo de conservação por finalidade. Alimenta o cálculo automático da expiração.",
+  colFinality:"Finalidade", colType:"Tipologia", colRetention:"Retenção", months:"meses",
+  retentionNote:"Alterar a retenção requer DPO_Admin. A tipologia (comunicação vs. partilha) condiciona a revogação.",
+  tComm:"Comunicação", tShare:"Partilha de dados",
+  subject:"Consulta de titular", subjectSub:"Histórico completo e imutável das decisões de um titular — para responder a pedidos de exercício de direitos.",
+  readonly:"apenas leitura", emailLbl:"E-mail do titular — identificador do registo de consentimento", consult:"Consultar",
+  history:"Histórico de decisões", granted:"Concedeu", revoked:"Revogou",
+  emailNote:"O e-mail é o identificador por excelência da recolha e, portanto, o identificador do registo de consentimento. Prevalece sempre a decisão mais recente; os registos são imutáveis (US-S3.2-05).",
+  audit:"Diário de auditoria", auditSub:"Registo imutável e encadeado por hashes de operações e acessos, com âmbito por empresa (tenant). Pesquisável por período e administrador.",
+  kRecords:"Registos (30 dias)", kChain:"Integridade da cadeia", kDenied:"Operações negadas",
+  chainOk:"Íntegra", lastCheck:"última verificação há 6 min", deniedM:"tentativas sem permissão",
+  verifyIntegrity:"Verificar integridade", periodPh:"Período: últimos 30 dias", adminPh:"Administrador: todos",
+  events:"Eventos", colWhen:"Quando", colUser:"Utilizador", colProfile:"Perfil", colOp:"Operação", colResult:"Resultado",
+  resOk:"OK", resDenied:"Negado", chainTitle:"Cadeia de integridade",
+  chainNote:"Cada registo depende criptograficamente do anterior — qualquer alteração ou remoção torna-se detetável.",
+  perms:"Matriz de permissões", permsSub:"Cada perfil só executa as operações que lhe competem — privilégio mínimo, aplicado por empresa (tenant).",
+  opXrole:"Operação × Perfil",
+  permsNote:"O perfil ativo está a comandar toda a UI: os botões bloqueados (🔒) e os itens de menu ocultos refletem esta matriz. As permissões são avaliadas em conjunto com a empresa (tenant) ativa (US-T3-02).",
+  needTip:"Requer:", noPermNav:"Sem permissão para este perfil",
+  opLegalView:"Ver textos legais (versão em vigor)", opCatalog:"Gerir catálogo/parceiros",
+  opRetention:"Definir retenção", opSubject:"Consultar titular", opSubjectEdit:"Editar consentimentos do titular",
+  opUsers:"Gerir perfis de acesso (utilizadores)", opAudit:"Pesquisar auditoria", opIntegrity:"Verificar integridade",
+  navUsers:"Gestão de utilizadores",
+  legalExternalNote:"Os textos legais são geridos no dotCMS. O CMP não gere conteúdos — apenas consulta a versão em vigor.",
+  currentVersions:"Versão em vigor por finalidade", stInForce:"Em vigor",
+  legalManagedOut:"A criação, edição e versionamento dos textos ocorrem no dotCMS; o CMP obtém o conteúdo aplicável através da API de conteúdos (S6.1).",
+  subjectEditTitle:"Editar consentimentos do titular",
+  subjectEditNote:"O DPO_Admin pode revogar consentimentos em nome do titular, para dar resposta a pedidos recebidos por canais não digitais (US-S2.1-10). Cada alteração fica registada no diário de auditoria.",
+  actGrant:"Conceder", actRevoke:"Revogar", onlyDpoEdit:"Só o perfil DPO_Admin pode editar consentimentos; para os restantes perfis esta vista é apenas de leitura.",
+  consentAll:"Aceito todos", cExpand:"Expandir todos", cCollapse:"Colapsar todos",
+  cViewText:"Ver texto em vigor", cHideText:"Ocultar texto", cInForce:"Texto em vigor",
+  subjectEditNote2:"Editas como se fosses o cliente: marca as sub-opções, usa a checkbox de topo para toda a categoria, e consulta o texto legal em vigor de cada finalidade.",
+  obRevokeOnly:"Em nome do titular, um terceiro só pode retirar consentimentos, nunca conceder (US-S1.2-09). Podes desmarcar para revogar; conceder está bloqueado.",
+  obTitle:"Origem e prova do pedido", obChannel:"Canal de origem", obRef:"Referência do pedido",
+  obReq:"Obrigatório: nenhuma revogação em nome do titular é aplicada sem canal de origem e referência do pedido (US-S2.1-11).",
+  chPhone:"Telefone", chDesk:"Balcão", chEmail:"E-mail", chLetter:"Carta",
+  revokeAllComm:"Revogar todas as comunicações", revokeCat:"Revogar", grantBlocked:"Conceder está bloqueado — só o próprio titular pode conceder.",
+  editable:"Editável", cellToggle:"Clicar para ativar/desativar",
+  permsEditNote:"O DPO_Admin ativa/desativa cada operação por perfil; a alteração vigora de imediato e fica registada em auditoria (US-S2.1-14).",
+  permsFixed:"Os três perfis são fixos — editam-se as capacidades, não se criam nem eliminam perfis.",
+  users:"Gestão de utilizadores", usersSub:"Gestão dos perfis de acesso ao CMP dos utilizadores internos, por empresa (tenant). Da responsabilidade do DPO_Admin.",
+  usersTitle:"Utilizadores e perfis de acesso", inviteUser:"+ Convidar utilizador", changeProfile:"Alterar perfil",
+  noProfile:"Sem perfil", colTenant:"Empresa (tenant)",
+  usersNote:"Os perfis (DPO_Admin, Business_Admin, Security_Auditor) determinam o que cada utilizador pode fazer no CMP. A atribuição é por tenant e fica registada em auditoria.",
+ },
+ es:{
+  brandTitle:"Gestión de Consentimientos", brandSub:"Frontend interno · Grupo CTT",
+  loginAccess:"Acceso restringido a empleados. La identidad y los perfiles los proporciona el directorio corporativo.",
+  loginBtn:"Iniciar sesión con Microsoft Entra ID",
+  loginNote:"Autenticación federada (SSO) con el IdP corporativo — sin credenciales propias de la aplicación; los perfiles vienen de Entra ID.",
+  banner:"PROTOTIPO NAVEGABLE · inspiración visual de los requisitos — no es el producto final",
+  internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
+  specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
+  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y socios", navRetention:"Plazos de retención",
+  navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navPerms:"Matriz de permisos",
+  secConfig:"Configuración", secAudit:"Consulta y Auditoría", secGov:"Gobernanza",
+  reqInView:"Requisitos en esta vista",
+  home:"Panel", homeSub:"Visión general de la plataforma. Lo que ves depende de tu perfil, de la empresa (tenant) y del idioma activos.",
+  kActive:"Textos legales activos", kPending:"A la espera del DPO", kIntegrity:"Integridad del diario",
+  mComm:"comunicación", mShare:"compartición", mSubmitted:"enviado hoy", mChain:"cadena verificada · 0 roturas",
+  sessTitle:"Sesión, empresa e idioma", authAs:"Autenticado como", withProfile:"con el perfil",
+  fromEntra:"proporcionado por Entra ID", givesAccess:"Este perfil da acceso a:",
+  ctxNote:"Contexto activo: empresa", langNote:"idioma", switchHint:"Cambia el PERFIL, la EMPRESA y el idioma arriba para ver la UI reaccionar.",
+  legal:"Textos legales", legalSub:"Gestionados en dotCMS (fuera del CMP). Aquí solo se consulta la versión vigente de cada finalidad (PT y ES).",
+  requisitos:"Requisitos", newDraft:"+ Nuevo borrador", submitApp:"Enviar para aprobación",
+  colCat:"Categoría", colText:"Texto", colVer:"Versión", colStatus:"Estado", colAuthor:"Autor", colLangs:"Idiomas",
+  versions:"Versiones", edit:"Editar", publish:"Publicar", archive:"Archivar",
+  stActive:"Activo", stPending:"Pendiente de aprobación", stDraft:"Borrador", stArchived:"Archivado",
+  legActive:"Activo — visible para los clientes", legPending:"Pendiente — a la espera del DPO", legDraft:"Borrador / Archivado",
+  publishNote:"La acción Publicar solo está activa en el perfil DPO_Admin (US-S2.1-03). Al publicar, la versión activa anterior se archiva (US-S2.1-04). La publicación exige el texto en PT y ES (US-T4-02).",
+  editorTitle:"Editor de borrador", contentLbl:"Contenido del texto legal", save:"Guardar borrador",
+  noEdit:"Sin permiso de edición en este perfil — el editor está en modo lectura.",
+  bilingualNote:"Cada versión tiene pestaña PT y ES; ambos son obligatorios para publicar (US-T4-02).",
+  catalog:"Catálogo y socios", catalogSub:"Sub-opciones y socios de las categorías UC-01 a UC-05, por empresa (tenant).",
+  addSub:"+ Sub-opción", addPartner:"+ Socio", categories:"Categorías",
+  colSubs:"Sub-opciones", colPartners:"Socios", activate:"Activar", deactivate:"Desactivar", stActiveF:"Activa", stInactiveF:"Inactiva",
+  retention:"Plazos de retención", retentionSub:"Plazo de conservación por finalidad. Alimenta el cálculo automático de la expiración.",
+  colFinality:"Finalidad", colType:"Tipología", colRetention:"Retención", months:"meses",
+  retentionNote:"Cambiar la retención requiere DPO_Admin. La tipología (comunicación vs. compartición) condiciona la revocación.",
+  tComm:"Comunicación", tShare:"Compartición de datos",
+  subject:"Consulta de titular", subjectSub:"Historial completo e inmutable de las decisiones de un titular — para responder a solicitudes de ejercicio de derechos.",
+  readonly:"solo lectura", emailLbl:"Correo del titular — identificador del registro de consentimiento", consult:"Consultar",
+  history:"Historial de decisiones", granted:"Concedió", revoked:"Revocó",
+  emailNote:"El correo es el identificador por excelencia de la recogida y, por tanto, el identificador del registro de consentimiento. Prevalece siempre la decisión más reciente; los registros son inmutables (US-S3.2-05).",
+  audit:"Diario de auditoría", auditSub:"Registro inmutable y encadenado por hashes de operaciones y accesos, con ámbito por empresa (tenant). Consultable por periodo y administrador.",
+  kRecords:"Registros (30 días)", kChain:"Integridad de la cadena", kDenied:"Operaciones denegadas",
+  chainOk:"Íntegra", lastCheck:"última verificación hace 6 min", deniedM:"intentos sin permiso",
+  verifyIntegrity:"Verificar integridad", periodPh:"Periodo: últimos 30 días", adminPh:"Administrador: todos",
+  events:"Eventos", colWhen:"Cuándo", colUser:"Usuario", colProfile:"Perfil", colOp:"Operación", colResult:"Resultado",
+  resOk:"OK", resDenied:"Denegado", chainTitle:"Cadena de integridad",
+  chainNote:"Cada registro depende criptográficamente del anterior — cualquier alteración o eliminación se vuelve detectable.",
+  perms:"Matriz de permisos", permsSub:"Cada perfil solo ejecuta las operaciones que le competen — privilegio mínimo, aplicado por empresa (tenant).",
+  opXrole:"Operación × Perfil",
+  permsNote:"El perfil activo comanda toda la UI: los botones bloqueados (🔒) y los elementos de menú ocultos reflejan esta matriz. Los permisos se evalúan junto con la empresa (tenant) activa (US-T3-02).",
+  needTip:"Requiere:", noPermNav:"Sin permiso para este perfil",
+  opLegalView:"Ver textos legales (versión vigente)", opCatalog:"Gestionar catálogo/socios",
+  opRetention:"Definir retención", opSubject:"Consultar titular", opSubjectEdit:"Editar consentimientos del titular",
+  opUsers:"Gestionar perfiles de acceso (usuarios)", opAudit:"Buscar auditoría", opIntegrity:"Verificar integridad",
+  navUsers:"Gestión de usuarios",
+  legalExternalNote:"Los textos legales se gestionan en dotCMS. El CMP no gestiona contenidos — solo consulta la versión vigente.",
+  currentVersions:"Versión vigente por finalidad", stInForce:"Vigente",
+  legalManagedOut:"La creación, edición y versionado de los textos ocurren en dotCMS; el CMP obtiene el contenido aplicable a través de la API de contenidos (S6.1).",
+  subjectEditTitle:"Editar consentimientos del titular",
+  subjectEditNote:"El DPO_Admin puede revocar consentimientos en nombre del titular, para atender solicitudes recibidas por canales no digitales (US-S2.1-10). Cada cambio queda registrado en el diario de auditoría.",
+  actGrant:"Conceder", actRevoke:"Revocar", onlyDpoEdit:"Solo el perfil DPO_Admin puede editar consentimientos; para los demás perfiles esta vista es de solo lectura.",
+  consentAll:"Acepto todos", cExpand:"Expandir todos", cCollapse:"Colapsar todos",
+  cViewText:"Ver texto vigente", cHideText:"Ocultar texto", cInForce:"Texto vigente",
+  subjectEditNote2:"Editas como si fueras el cliente: marca las sub-opciones, usa la casilla superior para toda la categoría, y consulta el texto legal vigente de cada finalidad.",
+  obRevokeOnly:"En nombre del titular, un tercero solo puede retirar consentimientos, nunca conceder (US-S1.2-09). Puedes desmarcar para revocar; conceder está bloqueado.",
+  obTitle:"Origen y prueba de la solicitud", obChannel:"Canal de origen", obRef:"Referencia de la solicitud",
+  obReq:"Obligatorio: ninguna revocación en nombre del titular se aplica sin canal de origen y referencia de la solicitud (US-S2.1-11).",
+  chPhone:"Teléfono", chDesk:"Oficina", chEmail:"Correo", chLetter:"Carta",
+  revokeAllComm:"Revocar todas las comunicaciones", revokeCat:"Revocar", grantBlocked:"Conceder está bloqueado — solo el propio titular puede conceder.",
+  editable:"Editable", cellToggle:"Clic para activar/desactivar",
+  permsEditNote:"El DPO_Admin activa/desactiva cada operación por perfil; el cambio se aplica de inmediato y queda registrado en auditoría (US-S2.1-14).",
+  permsFixed:"Los tres perfiles son fijos — se editan las capacidades, no se crean ni eliminan perfiles.",
+  users:"Gestión de usuarios", usersSub:"Gestión de los perfiles de acceso al CMP de los usuarios internos, por empresa (tenant). Responsabilidad del DPO_Admin.",
+  usersTitle:"Usuarios y perfiles de acceso", inviteUser:"+ Invitar usuario", changeProfile:"Cambiar perfil",
+  noProfile:"Sin perfil", colTenant:"Empresa (tenant)",
+  usersNote:"Los perfiles (DPO_Admin, Business_Admin, Security_Auditor) determinan lo que cada usuario puede hacer en el CMP. La asignación es por tenant y queda registrada en auditoría.",
+ }
+};
+const t=(k)=> (I18N[state.lang] && I18N[state.lang][k]!=null) ? I18N[state.lang][k] : (I18N.pt[k]!=null?I18N.pt[k]:k);
+const L=(o)=> (o&&o[state.lang]!=null)?o[state.lang]:(o&&o.pt!=null?o.pt:o);
+
+/* ============ dados ============ */
+const ROLES={
+  DPO_Admin:{person:"João Rodrigues",initials:"JR",desc:{pt:"Responsável pela Proteção de Dados",es:"Responsable de Protección de Datos"}},
+  Business_Admin:{person:"Marta Antunes",initials:"MA",desc:{pt:"Gestor de negócio",es:"Gestor de negocio"}},
+  Security_Auditor:{person:"Rui Marques",initials:"RM",desc:{pt:"Auditor de Segurança",es:"Auditor de Seguridad"}},
+};
+const PERMS={
+  // Textos legais: geridos fora da plataforma -> apenas leitura da versão em vigor
+  "legal.view":["DPO_Admin","Business_Admin","Security_Auditor"],
+  "catalog.view":["DPO_Admin","Business_Admin"],"catalog.manage":["Business_Admin"],
+  "subject.view":["DPO_Admin","Security_Auditor"],
+  // DPO_Admin: edita os consentimentos de um titular e gere os perfis de acesso ao CMP
+  "subject.edit":["DPO_Admin"],"users.manage":["DPO_Admin"],
+  "audit.view":["DPO_Admin","Security_Auditor"],"audit.integrity":["Security_Auditor","DPO_Admin"],
+  "perms.view":["DPO_Admin","Business_Admin","Security_Auditor"],
+  "perms.manage":["DPO_Admin"], // US-S2.1-14: DPO gere a matriz operação × perfil
+};
+// alterna uma célula operação × perfil (US-S2.1-14). Perfis são fixos; só as capacidades mudam.
+function pToggle(op,role){const a=PERMS[op];if(!a)return;const i=a.indexOf(role);if(i>=0)a.splice(i,1);else a.push(role);renderNav();renderView();}
+const can=(op)=>PERMS[op]&&PERMS[op].includes(state.role);
+const NAV=[
+  {id:"home",ic:"▤",k:"navHome",need:null},
+  {sec:"secConfig"},
+  {id:"legal",ic:"§",k:"navLegal",need:"legal.view",us:"S2.1"},
+  {id:"catalog",ic:"⛃",k:"navCatalog",need:"catalog.view",us:"S2.1-05"},
+  {sec:"secAudit"},
+  {id:"subject",ic:"◑",k:"navSubject",need:"subject.view",us:"S3.2-02"},
+  {id:"audit",ic:"◇",k:"navAudit",need:"audit.view",us:"S3.2-01"},
+  {sec:"secGov"},
+  {id:"users",ic:"👤",k:"navUsers",need:"users.manage",us:"T1-02"},
+  {id:"perms",ic:"⚿",k:"navPerms",need:"perms.view",us:"S2.1-09"},
+];
+// dados com âmbito por tenant
+const LEGAL={
+ "CTT":[
+  {cat:"UC-01",name:{pt:"Comunicações comerciais CTT",es:"Comunicaciones comerciales CTT"},ver:"v1.1.0",status:"Ativo",by:"DPO_Admin",langs:"PT · ES"},
+  {cat:"UC-02",name:{pt:"Partilha com parceiros · Telecom",es:"Compartición con socios · Telecom"},ver:"v1.0.0",status:"Ativo",by:"DPO_Admin",langs:"PT · ES"},
+  {cat:"UC-03",name:{pt:"Personalização de ofertas",es:"Personalización de ofertas"},ver:"v0.4.0",status:"Pendente",by:"Business_Admin",langs:"PT · ES"},
+  {cat:"UC-04",name:{pt:"Estudos de mercado",es:"Estudios de mercado"},ver:"v0.2.0",status:"Rascunho",by:"Business_Admin",langs:"PT"},
+  {cat:"UC-01",name:{pt:"Comunicações comerciais CTT",es:"Comunicaciones comerciales CTT"},ver:"v1.0.0",status:"Arquivado",by:"DPO_Admin",langs:"PT · ES"},
+ ],
+ "CTT Express":[
+  {cat:"UC-01",name:{pt:"Comunicações · CTT Express",es:"Comunicaciones · CTT Express"},ver:"v1.0.0",status:"Ativo",by:"DPO_Admin",langs:"PT · ES"},
+  {cat:"UC-02",name:{pt:"Partilha logística · parceiros",es:"Compartición logística · socios"},ver:"v0.3.0",status:"Rascunho",by:"Business_Admin",langs:"PT"},
+ ],
+};
+const CATS={
+ "CTT":[
+  {code:"UC-01",label:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},sub:3,partners:0,active:true},
+  {code:"UC-02",label:{pt:"Partilha de dados com parceiros",es:"Compartición de datos con socios"},sub:5,partners:4,active:true},
+  {code:"UC-03",label:{pt:"Personalização e perfilagem",es:"Personalización y perfilado"},sub:2,partners:1,active:true},
+  {code:"UC-04",label:{pt:"Estudos de mercado",es:"Estudios de mercado"},sub:2,partners:0,active:false},
+  {code:"UC-05",label:{pt:"Programas de fidelização",es:"Programas de fidelización"},sub:3,partners:2,active:true},
+ ],
+ "CTT Express":[
+  {code:"UC-01",label:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},sub:2,partners:0,active:true},
+  {code:"UC-02",label:{pt:"Partilha logística com parceiros",es:"Compartición logística con socios"},sub:3,partners:2,active:true},
+ ],
+};
+const RETENTION={
+ "CTT":[
+  {cat:"UC-01",fin:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},tipo:"comm",meses:24},
+  {cat:"UC-02",fin:{pt:"Partilha · Telecomunicações",es:"Compartición · Telecomunicaciones"},tipo:"share",meses:36},
+  {cat:"UC-03",fin:{pt:"Personalização de ofertas",es:"Personalización de ofertas"},tipo:"comm",meses:18},
+  {cat:"UC-05",fin:{pt:"Fidelização",es:"Fidelización"},tipo:"comm",meses:24},
+ ],
+ "CTT Express":[
+  {cat:"UC-01",fin:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},tipo:"comm",meses:24},
+  {cat:"UC-02",fin:{pt:"Partilha logística",es:"Compartición logística"},tipo:"share",meses:36},
+ ],
+};
+const AUDIT={
+ "CTT":[
+  {ts:"2026-07-28 14:02",user:"Marta Antunes",role:"Business_Admin",op:{pt:'Submeteu rascunho UC-03 v0.4.0 para aprovação',es:'Envió borrador UC-03 v0.4.0 para aprobación'},ok:true},
+  {ts:"2026-07-28 11:47",user:"João Rodrigues",role:"DPO_Admin",op:{pt:"Publicou UC-02 v1.0.0 · arquivou v0.9.0",es:"Publicó UC-02 v1.0.0 · archivó v0.9.0"},ok:true},
+  {ts:"2026-07-27 18:20",user:"Marta Antunes",role:"Business_Admin",op:{pt:"Tentou publicar UC-03 — negado por falta de permissão",es:"Intentó publicar UC-03 — denegado por falta de permiso"},ok:false},
+  {ts:"2026-07-27 09:15",user:"João Rodrigues",role:"DPO_Admin",op:{pt:"Mudou de empresa: CTT Express → CTT",es:"Cambió de empresa: CTT Express → CTT"},ok:true},
+ ],
+ "CTT Express":[
+  {ts:"2026-07-28 10:05",user:"Rui Marques",role:"Security_Auditor",op:{pt:"Verificou integridade da cadeia — íntegra",es:"Verificó integridad de la cadena — íntegra"},ok:true},
+  {ts:"2026-07-27 16:40",user:"Marta Antunes",role:"Business_Admin",op:{pt:"Criou rascunho UC-02 v0.3.0",es:"Creó borrador UC-02 v0.3.0"},ok:true},
+ ],
+};
+const SUBJECT=[
+  {ts:"2026-07-15 18:30",act:"revoked",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
+  {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
+  {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-02 · Partilha Telecom",es:"UC-02 · Compartición Telecom"},tipo:"share",lang:"ES"},
+];
+// Catálogo de consentimentos (vista de cliente): categoria -> sub-opções + texto legal em vigor
+const CONSENT_CAT={
+ "CTT":[
+  {code:"UC-01",name:{pt:"Comunicações comerciais CTT",es:"Comunicaciones comerciales CTT"},ver:"v1.1.0",tipo:"comm",
+   text:{pt:"Autorizo os CTT a enviarem-me comunicações comerciais sobre produtos, serviços e campanhas, através dos canais que selecionar. Posso retirar o consentimento a qualquer momento.",
+         es:"Autorizo a CTT a enviarme comunicaciones comerciales sobre productos, servicios y campañas, a través de los canales que seleccione. Puedo retirar el consentimiento en cualquier momento."},
+   subs:[{id:"prod",label:{pt:"Produtos e serviços CTT",es:"Productos y servicios CTT"},g:true},
+         {id:"promo",label:{pt:"Promoções e campanhas",es:"Promociones y campañas"},g:false},
+         {id:"news",label:{pt:"Newsletter periódica",es:"Boletín periódico"},g:false}]},
+  {code:"UC-02",name:{pt:"Partilha com parceiros · Telecom",es:"Compartición con socios · Telecom"},ver:"v1.0.0",tipo:"share",
+   text:{pt:"Autorizo a partilha dos meus dados de contacto com parceiros do setor das telecomunicações, para que me apresentem ofertas relevantes.",
+         es:"Autorizo la compartición de mis datos de contacto con socios del sector de las telecomunicaciones, para que me presenten ofertas relevantes."},
+   subs:[{id:"telecom",label:{pt:"Parceiros de telecomunicações",es:"Socios de telecomunicaciones"},g:true},
+         {id:"seguros",label:{pt:"Parceiros de seguros",es:"Socios de seguros"},g:false}]},
+  {code:"UC-05",name:{pt:"Programa de fidelização",es:"Programa de fidelización"},ver:"v1.0.0",tipo:"comm",
+   text:{pt:"Autorizo o tratamento dos meus dados no âmbito do programa de fidelização, incluindo a atribuição de vantagens personalizadas.",
+         es:"Autorizo el tratamiento de mis datos en el marco del programa de fidelización, incluida la asignación de ventajas personalizadas."},
+   subs:[{id:"pontos",label:{pt:"Acumulação de pontos",es:"Acumulación de puntos"},g:false},
+         {id:"vantagens",label:{pt:"Vantagens personalizadas",es:"Ventajas personalizadas"},g:false}]},
+ ],
+ "CTT Express":[
+  {code:"UC-01",name:{pt:"Comunicações · CTT Express",es:"Comunicaciones · CTT Express"},ver:"v1.0.0",tipo:"comm",
+   text:{pt:"Autorizo a CTT Express a enviar-me comunicações sobre serviços de envio e logística.",
+         es:"Autorizo a CTT Express a enviarme comunicaciones sobre servicios de envío y logística."},
+   subs:[{id:"envios",label:{pt:"Novidades de serviços de envio",es:"Novedades de servicios de envío"},g:true},
+         {id:"promo",label:{pt:"Promoções",es:"Promociones"},g:false}]},
+  {code:"UC-02",name:{pt:"Partilha logística com parceiros",es:"Compartición logística con socios"},ver:"v1.0.0",tipo:"share",
+   text:{pt:"Autorizo a partilha de dados de entrega com parceiros logísticos para melhorar o serviço de distribuição.",
+         es:"Autorizo la compartición de datos de entrega con socios logísticos para mejorar el servicio de distribución."},
+   subs:[{id:"log",label:{pt:"Parceiros logísticos",es:"Socios logísticos"},g:false}]},
+ ],
+};
+
+const state={role:"DPO_Admin",view:"home",spec:true,lang:"pt",tenant:"CTT"};
+
+/* ============ auth & chrome ============ */
+function signIn(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").classList.add("on");
+  const sel=document.getElementById("role");
+  sel.innerHTML=Object.keys(ROLES).map(r=>`<option value="${r}">${r}</option>`).join("");
+  setRole("DPO_Admin");
+  applyChrome();
+}
+function setRole(r){
+  state.role=r;const info=ROLES[r];
+  document.getElementById("whoName").textContent=info.person;
+  document.getElementById("whoRole").textContent=r;
+  document.getElementById("av").textContent=info.initials;
+  document.getElementById("role").value=r;
+  const cur=NAV.find(n=>n.id===state.view);
+  if(cur&&cur.need&&!can(cur.need))state.view="home";
+  renderNav();renderView();
+}
+function setTenant(tn){state.tenant=tn;renderView();}
+function setLang(l){
+  state.lang=l;
+  ["lp-pt","tg-pt"].forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.toggle("on",l==="pt"));
+  ["lp-es","tg-es"].forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.toggle("on",l==="es"));
+  applyLogin(); applyChrome();
+  if(document.getElementById("app").classList.contains("on")){renderNav();renderView();}
+}
+function applyLogin(){
+  document.getElementById("lg-title").textContent=t("brandTitle");
+  document.getElementById("lg-sub").textContent=t("brandSub");
+  document.getElementById("lg-access").textContent=t("loginAccess");
+  document.getElementById("lg-btn").textContent=t("loginBtn");
+  document.getElementById("lg-note").textContent=t("loginNote");
+}
+function applyChrome(){
+  document.getElementById("banner").textContent=t("banner");
+  document.getElementById("tb-title").textContent=t("brandTitle");
+  document.getElementById("tb-internal").textContent=t("internal");
+  document.getElementById("tb-theme").textContent=t("theme");
+  document.getElementById("tb-tenant").textContent=t("tenant");
+  document.getElementById("tb-profile").textContent=t("profile");
+  document.getElementById("specBtn").textContent=state.spec?t("specOn"):t("specOff");
+  const info=ROLES[state.role];document.getElementById("whoRole").textContent=state.role;
+}
+function toggleSpec(){state.spec=!state.spec;document.body.classList.toggle("nospec",!state.spec);
+  document.getElementById("specBtn").textContent=state.spec?t("specOn"):t("specOff");}
+function toggleTheme(){const r=document.documentElement;
+  const dark=(r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))==="dark";
+  r.setAttribute("data-theme",dark?"light":"dark");}
+
+/* ============ nav ============ */
+function renderNav(){
+  document.getElementById("side").innerHTML=NAV.map(n=>{
+    if(n.sec)return `<div class="sec">${t(n.sec)}</div>`;
+    const allowed=!n.need||can(n.need);
+    const rq=n.us?`<span class="us rq">${n.us}</span>`:"";
+    return `<button class="nav ${state.view===n.id?"active":""}" ${allowed?"":"disabled"} onclick="go('${n.id}')" title="${allowed?"":t("noPermNav")}">
+      <span class="ic">${n.ic}</span><span>${t(n.k)}</span>${allowed?rq:'<span class="rq">🔒</span>'}</button>`;
+  }).join("");
+}
+function go(id){state.view=id;renderNav();renderView();}
+
+/* ============ helpers ============ */
+function statusPill(st){return{
+  "Ativo":`<span class="pill ok"><span class="dot" style="background:var(--ok)"></span>${t("stActive")}</span>`,
+  "Pendente":`<span class="pill warn"><span class="dot" style="background:var(--warn)"></span>${t("stPending")}</span>`,
+  "Rascunho":`<span class="pill mute">${t("stDraft")}</span>`,
+  "Arquivado":`<span class="pill mute" style="opacity:.7">${t("stArchived")}</span>`}[st]||st;}
+function actBtn(label,op,cls=""){const ok=can(op);
+  return `<button class="btn ${cls}" ${ok?"":"disabled"} title="${ok?"":t("needTip")+" "+PERMS[op].join(" · ")}">${ok?"":'🔒 '}${label}</button>`;}
+function head(title,sub,crumb){return `<div class="crumbs">CMP · ${crumb} · <span class="tchip">🏢 ${state.tenant}</span></div>
+  <div class="page-head"><div><h1>${title}</h1><div class="sub">${sub}</div></div></div>`;}
+function tipo(x){return x==="share"?`<span class="pill acc">${t("tShare")}</span>`:`<span class="pill mute">${t("tComm")}</span>`;}
+
+/* ===== Editor de consentimentos (vista de cliente, para o DPO_Admin) ===== */
+function ensureCons(){
+  state.cons=state.cons||{}; state.expanded=state.expanded||{}; state.textopen=state.textopen||{};
+  if(!state.cons[state.tenant]){
+    const m={}; (CONSENT_CAT[state.tenant]||[]).forEach(c=>{m[c.code]={}; c.subs.forEach(s=>m[c.code][s.id]=!!s.g);});
+    state.cons[state.tenant]=m; state.expanded[state.tenant]=new Set(); state.textopen[state.tenant]=new Set();
+  }
+  return state.cons[state.tenant];
+}
+function catObj(code){return (CONSENT_CAT[state.tenant]||[]).find(c=>c.code===code);}
+function catState(code){const subs=catObj(code).subs,c=ensureCons()[code];const on=subs.filter(s=>c[s.id]).length;return on===0?'none':on===subs.length?'all':'some';}
+// Em nome do titular só se REVOGA (US-S1.2-09): conceder está bloqueado.
+function cToggleSub(cat,sub){const m=ensureCons();if(m[cat][sub]){m[cat][sub]=false;updateCons();}}
+function cRevokeCat(cat){catObj(cat).subs.forEach(s=>ensureCons()[cat][s.id]=false);updateCons();}
+function cRevokeComm(){ensureCons();(CONSENT_CAT[state.tenant]||[]).filter(c=>c.tipo==='comm').forEach(c=>c.subs.forEach(s=>state.cons[state.tenant][c.code][s.id]=false));updateCons();}
+function cExp(cat){ensureCons();const S=state.expanded[state.tenant];S.has(cat)?S.delete(cat):S.add(cat);updateCons();}
+function cTxt(cat){ensureCons();const S=state.textopen[state.tenant];S.has(cat)?S.delete(cat):S.add(cat);updateCons();}
+function cExpandAll(v){ensureCons();const S=state.expanded[state.tenant];S.clear();if(v)(CONSENT_CAT[state.tenant]||[]).forEach(c=>S.add(c.code));updateCons();}
+function box(kind){const cls=kind==='all'?'cb on':kind==='some'?'cb ind':'cb';const g=kind==='all'?'✓':kind==='some'?'–':'';return `<span class="${cls}">${g}</span>`;}
+function renderConsentEditor(){
+  ensureCons();const cats=CONSENT_CAT[state.tenant]||[];const exp=state.expanded[state.tenant],txo=state.textopen[state.tenant];
+  // formulário de origem/prova do pedido (US-S2.1-11) — obrigatório
+  let h=`<p style="margin:0 0 10px;font-size:.88rem">${t("subjectEditNote")}</p>
+   <div class="note" style="margin:0 0 12px">⚠️ ${t("obRevokeOnly")}</div>
+   <div class="card" style="padding:12px 14px;margin-bottom:14px;box-shadow:none">
+     <div class="ctext-h" style="margin-bottom:8px">🧾 ${t("obTitle")} <span class="us">US-S2.1-11</span></div>
+     <div class="grid g3">
+       <div class="field" style="margin:0"><label>${t("obChannel")} *</label>
+         <select><option>${t("chPhone")}</option><option>${t("chDesk")}</option><option>${t("chEmail")}</option><option>${t("chLetter")}</option></select></div>
+       <div class="field" style="margin:0"><label>${t("obRef")} *</label><input placeholder="REQ-2026-000123"></div>
+       <div class="field" style="margin:0"><label>${t("colWhen")} *</label><input value="2026-08-11"></div>
+     </div>
+     <div class="note" style="margin-top:8px">${t("obReq")}</div>
+   </div>
+   <div class="ctools">
+     <button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="cRevokeComm()">${t("revokeAllComm")}</button>
+     <span class="sep"></span>
+     <button class="linklike" onclick="cExpandAll(true)">${t("cExpand")}</button>
+     <button class="linklike" onclick="cExpandAll(false)">${t("cCollapse")}</button>
+   </div>`;
+  h+=cats.map(c=>{
+    const st=catState(c.code),isExp=exp.has(c.code),isTxt=txo.has(c.code);
+    return `<div class="ccat">
+      <div class="ccat-h">
+        <span class="${st==='none'?'cb':'cb on'}" style="cursor:${st==='none'?'default':'pointer'}" ${st==='none'?'':`onclick="cRevokeCat('${c.code}')"`} title="${st==='none'?'':t("revokeCat")}">${st==='all'?'✓':st==='some'?'–':''}</span>
+        <button class="exp" onclick="cExp('${c.code}')">${isExp?'▾':'▸'}</button>
+        <span class="ccat-name">${L(c.name)}</span>
+        <span class="pill mute">${c.ver}</span>${tipo(c.tipo)}
+        <button class="linklike" onclick="cTxt('${c.code}')">${isTxt?t("cHideText"):t("cViewText")}</button>
+      </div>
+      ${isTxt?`<div class="ctext"><div class="ctext-h">📄 ${t("cInForce")} <span class="us">${c.ver}</span> <span class="pill mute">${state.lang.toUpperCase()}</span> · dotCMS</div>${L(c.text)}</div>`:''}
+      ${isExp?`<div class="csubs">${c.subs.map(s=>{const on=ensureCons()[c.code][s.id];
+         return on
+           ? `<label class="csub" onclick="cToggleSub('${c.code}','${s.id}')" title="${t("revokeCat")}"><span class="cb on">✓</span> ${L(s.label)}</label>`
+           : `<label class="csub" style="opacity:.55;cursor:not-allowed" title="${t("grantBlocked")}"><span class="cb">🔒</span> ${L(s.label)}</label>`;}).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+  return h;
+}
+function updateCons(){const el=document.getElementById('consed');if(el)el.innerHTML=renderConsentEditor();}
+
+/* ============ views ============ */
+const VIEWS={
+ home(){
+  const legal=LEGAL[state.tenant],pend=legal.filter(l=>l.status==="Pendente").length,act=legal.filter(l=>l.status==="Ativo").length;
+  const visible=NAV.filter(n=>n.id&&n.id!=="home"&&(!n.need||can(n.need)));
+  return head(t("home"),t("homeSub"),t("home"))
+  +`<div class="reqbar"><span class="lbl">${t("reqInView")}</span>
+     <span class="us">US-T1-01</span><span class="us">US-T1-02</span><span class="us">US-T3-01</span><span class="us">US-T3-02</span><span class="us">US-T4-01</span></div>
+  <div class="grid g3">
+    <div class="card stat"><div class="k">${t("kActive")}</div><div class="v">${act}</div><div class="m">🏢 ${state.tenant}</div></div>
+  </div><div style="height:16px"></div>
+  <div class="card panel"><h3>${t("sessTitle")}</h3><div class="body">
+     <p style="margin:0 0 10px">${t("authAs")} <strong>${ROLES[state.role].person}</strong> (${L(ROLES[state.role].desc)}) ${t("withProfile")} <span class="us">${state.role}</span> — ${t("fromEntra")}.</p>
+     <p style="margin:0 0 10px">${t("ctxNote")} <span class="tchip">🏢 ${state.tenant}</span> · ${t("langNote")} <strong>${state.lang.toUpperCase()}</strong>. ${t("givesAccess")}</p>
+     <div style="display:flex;flex-wrap:wrap;gap:8px">${visible.map(n=>`<span class="pill acc">${t(n.k)}</span>`).join("")||"—"}</div>
+     <div class="note">↳ ${t("switchHint")}</div>
+  </div></div>`;
+ },
+ legal(){
+  // Geridos fora da plataforma -> apenas a versão em vigor (status Ativo), só leitura
+  const rows=LEGAL[state.tenant].filter(l=>l.status==="Ativo");
+  return head(t("legal"),t("legalSub"),t("secConfig")+" / "+t("legal"))
+  +`<div class="req-inline"><span class="us">US-S2.1-03</span><span class="us">US-T4-02</span></div>
+  <div class="note" style="margin:0 0 14px"><span class="pill mute">${t("readonly")}</span> &nbsp;${t("legalExternalNote")}</div>
+  <div class="card panel"><h3>${t("currentVersions")} · 🏢 ${state.tenant}</h3><div class="tabwrap"><table>
+    <thead><tr><th>${t("colCat")}</th><th>${t("colText")}</th><th>${t("colVer")}</th><th>${t("colLangs")}</th><th>${t("colStatus")}</th></tr></thead>
+    <tbody>${rows.map(l=>`<tr><td class="mono">${l.cat}</td><td>${L(l.name)}</td><td class="mono">${l.ver}</td>
+      <td>${l.langs.includes("ES")?'<span class="pill ok">'+l.langs+'</span>':'<span class="pill warn">'+l.langs+'</span>'}</td>
+      <td><span class="pill ok"><span class="dot" style="background:var(--ok)"></span>${t("stInForce")}</span></td></tr>`).join("")}</tbody></table></div></div>
+   <div class="note">🔗 ${t("legalManagedOut")}</div>`;
+ },
+ users(){
+  const USERS=[
+   {name:"João Rodrigues",email:"joao.rodrigues@ctt.pt",role:"DPO_Admin",tenant:"CTT · CTT Express"},
+   {name:"Marta Antunes",email:"marta.antunes@ctt.pt",role:"Business_Admin",tenant:"CTT"},
+   {name:"Rui Marques",email:"rui.marques@ctt.pt",role:"Security_Auditor",tenant:"CTT · CTT Express"},
+   {name:"Ana Sousa",email:"ana.sousa@cttexpress.com",role:"Business_Admin",tenant:"CTT Express"},
+   {name:"Pedro Lima",email:"pedro.lima@ctt.pt",role:"—",tenant:"—"},
+  ];
+  return head(t("users"),t("usersSub"),t("secGov")+" / "+t("users"))
+  +`<div class="req-inline"><span class="us">US-T1-02</span><span class="us">US-T3-02</span></div>
+  <div style="margin-bottom:14px">${actBtn(t("inviteUser"),"users.manage","primary")}</div>
+  <div class="card panel"><h3>${t("usersTitle")}</h3><div class="tabwrap"><table>
+   <thead><tr><th>${t("colUser")}</th><th>E-mail</th><th>${t("colProfile")}</th><th>${t("colTenant")}</th><th></th></tr></thead>
+   <tbody>${USERS.map(u=>`<tr><td>${u.name}</td><td class="mono">${u.email}</td>
+     <td>${u.role==="—"?'<span class="pill mute">'+t("noProfile")+'</span>':'<span class="pill acc">'+u.role+'</span>'}</td>
+     <td class="tag">${u.tenant}</td>
+     <td><div class="rowact">${actBtn(t("changeProfile"),"users.manage")}</div></td></tr>`).join("")}</tbody></table></div></div>
+  <div class="note">👤 ${t("usersNote")}</div>`;
+ },
+ catalog(){
+  const rows=CATS[state.tenant];
+  return head(t("catalog"),t("catalogSub"),t("secConfig")+" / "+t("catalog"))
+  +`<div class="req-inline"><span class="us">US-S2.1-05</span><span class="us">US-T3-03</span></div>
+  <div class="note" style="margin:0 0 14px"><span class="pill mute">${t("readonly")}</span> &nbsp; Sub-opções e parceiros são geridos no dotCMS.</div>
+  <div class="card panel"><h3>${t("categories")} · 🏢 ${state.tenant}</h3><div class="tabwrap"><table>
+   <thead><tr><th>${t("colCat")}</th><th>${t("colText")}</th><th>${t("colSubs")}</th><th>${t("colPartners")}</th><th>${t("colStatus")}</th></tr></thead>
+   <tbody>${rows.map(c=>`<tr><td class="mono">${c.code}</td><td>${L(c.label)}</td><td>${c.sub}</td><td>${c.partners}</td>
+     <td>${c.active?'<span class="pill ok">'+t("stActiveF")+'</span>':'<span class="pill mute">'+t("stInactiveF")+'</span>'}</td></tr>`).join("")}</tbody></table></div></div>`;
+ },
+ subject(){
+  const canEdit=can("subject.edit");
+  return head(t("subject"),t("subjectSub"),t("secAudit")+" / "+t("subject"))
+  +`<div class="req-inline"><span class="us">US-S3.2-02</span><span class="us">US-S1.3-01</span>${canEdit?'<span class="us">US-T1-02 (edição)</span>':''}</div>
+  <div class="card panel"><h3>${t("subject")} <span class="pill ${canEdit?'acc':'mute'}">${canEdit?t("subjectEditTitle"):t("readonly")}</span></h3><div class="body">
+     <div class="field"><label>${t("emailLbl")}</label><input value="cliente.exemplo@ctt.pt" /></div>
+     <button class="btn primary">${t("consult")}</button>
+   </div></div><div style="height:16px"></div>
+   <div class="card panel"><h3>${t("history")} · <span class="mono">cliente.exemplo@ctt.pt</span> · 🏢 ${state.tenant}</h3><div class="body">
+     <div class="tl">${SUBJECT.map(s=>`<div class="item"><div class="when">${s.ts} · <span class="pill mute">${s.lang}</span></div>
+        <div><strong style="color:${s.act==='revoked'?'var(--danger)':'var(--ok)'}">${s.act==='revoked'?t("revoked"):t("granted")}</strong> — ${L(s.fin)} ${tipo(s.tipo)}</div></div>`).join("")}</div>
+     <div class="note">✉️ ${t("emailNote")}</div>
+   </div></div>`
+   +(canEdit?`<div style="height:16px"></div>
+   <div class="card panel"><h3>${t("subjectEditTitle")} <span class="us">DPO_Admin · S4.1</span></h3><div class="body">
+     <div id="consed">${renderConsentEditor()}</div>
+   </div></div>`
+   :`<div class="note" style="margin-top:12px">🔒 ${t("onlyDpoEdit")}</div>`);
+ },
+ audit(){
+  const rows=AUDIT[state.tenant];
+  return head(t("audit"),t("auditSub"),t("secAudit")+" / "+t("audit"))
+  +`<div class="reqbar"><span class="lbl">${t("requisitos")}</span><span class="us">US-S3.2-01</span><span class="us">US-S3.1-01/02</span><span class="us">US-T3-02</span></div>
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card stat"><div class="k">${t("kRecords")}</div><div class="v">${state.tenant==="CTT"?"1 284":"316"}</div><div class="m">🏢 ${state.tenant}</div></div>
+    <div class="card stat"><div class="k">${t("kChain")}</div><div class="v" style="color:var(--ok)">${t("chainOk")}</div><div class="m">${t("lastCheck")}</div></div>
+    <div class="card stat"><div class="k">${t("kDenied")}</div><div class="v" style="color:var(--danger)">${state.tenant==="CTT"?"3":"0"}</div><div class="m">${t("deniedM")}</div></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <input class="field" style="min-width:170px" placeholder="${t("periodPh")}">
+    <input class="field" style="min-width:170px" placeholder="${t("adminPh")}"></div>
+  <div class="card panel"><h3>${t("events")} <span class="us">S3.2-01</span></h3><div class="tabwrap"><table>
+   <thead><tr><th>${t("colWhen")}</th><th>${t("colUser")}</th><th>${t("colProfile")}</th><th>${t("colOp")}</th><th>${t("colResult")}</th></tr></thead>
+   <tbody>${rows.map(a=>`<tr><td class="mono">${a.ts}</td><td>${a.user}</td><td class="tag">${a.role}</td><td>${L(a.op)}</td>
+     <td>${a.ok?'<span class="pill ok">'+t("resOk")+'</span>':'<span class="pill danger">'+t("resDenied")+'</span>'}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card panel" style="margin-top:16px"><h3>${t("chainTitle")} <span class="us">S3.1-01/02</span></h3><div class="body">
+    <div class="hashline">#1284  sha256:9f2a…c71b  ⟵  #1283  sha256:41de…88a0  ⟵  #1282  sha256:0b7c…3e5f</div>
+    <div class="note" style="color:var(--ok)">✓ ${t("chainNote")}</div></div></div>`;
+ },
+ perms(){
+  const ops=[["opLegalView","legal.view"],["opCatalog","catalog.manage"],
+   ["opSubject","subject.view"],["opSubjectEdit","subject.edit"],["opUsers","users.manage"],
+   ["opAudit","audit.view"],["opIntegrity","audit.integrity"]];
+  const roles=Object.keys(ROLES);
+  const edit=can("perms.manage");
+  const cell=(op,r)=>{const on=PERMS[op].includes(r);
+    return edit
+      ? `<td onclick="pToggle('${op}','${r}')" style="cursor:pointer" class="${on?'chk':'no'}" title="${t("cellToggle")}">${on?'●':'○'}</td>`
+      : (on?'<td class="chk">●</td>':'<td class="no">—</td>');};
+  return head(t("perms"),t("permsSub"),t("secGov")+" / "+t("perms"))
+  +`<div class="reqbar"><span class="lbl">${t("requisitos")}</span><span class="us">US-S2.1-09</span><span class="us">US-S2.1-14</span><span class="us">US-T1-02</span></div>
+  ${edit?`<div class="note" style="margin:0 0 12px"><span class="pill acc">${t("editable")}</span> &nbsp;${t("permsEditNote")}</div>`:''}
+  <div class="card panel"><h3>${t("opXrole")}</h3><div class="tabwrap"><table class="matrix">
+   <thead><tr><th>${t("colOp")}</th>${roles.map(r=>`<th class="role-h">${r}</th>`).join("")}</tr></thead>
+   <tbody>${ops.map(([lk,op])=>`<tr><td>${t(lk)} <span class="us">${op}</span></td>
+     ${roles.map(r=>cell(op,r)).join("")}</tr>`).join("")}</tbody></table></div></div>
+  <div class="note">${t("permsNote")}</div>${edit?`<div class="note">🔒 ${t("permsFixed")}</div>`:''}`;
+ },
+};
+function renderView(){document.getElementById("main").innerHTML=(VIEWS[state.view]||VIEWS.home)();}
+
+/* init login language strings */
+applyLogin();
+</script>
