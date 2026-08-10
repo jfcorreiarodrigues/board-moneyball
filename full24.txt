@@ -1,0 +1,1819 @@
+126931 — Projeto Moneyball
+Caderno de User Stories
+Plataforma de Gestão de Consentimentos (CMP)
+Detalhe funcional e técnico por entregável — Low-Level Design
+Versão 1.6
+10 de agosto de 2026
+Enterprise Architecture — Group CTT · Internal Information
+1. Introdução e como usar este caderno
+Este caderno detalha as user stories de cada entregável da Plataforma de Gestão de Consentimentos (CMP) do Projeto Moneyball. Complementa a Lista de Requisitos v0.5 — que descreve o que a solução tem de fazer — descendo ao nível do comportamento observável que cada equipa vai implementar e testar.
+A estrutura acompanha os cinco blocos arquiteturais e as treze peças identificadas no plano de entregáveis. Cada peça tem equipa atribuída e um conjunto de user stories independentes, redigidas para poderem entrar diretamente em refinamento e planeamento de sprint.
+1.1. Convenções adotadas
+Narrativa — cada história segue a forma Como / Quero / Para, identificando o ator, a capacidade pretendida e o valor de negócio associado.
+Cenários BDD — os cenários usam Dado / Quando / Então (Gherkin em português). Cada história cobre o caminho feliz e, quando relevante, os casos-limite que determinam a conformidade.
+Rastreabilidade — cada história indica os requisitos da v0.5 que satisfaz (RF-MC, RF-BO, RF-CA, RF-MS, RF-API, RNF), garantindo rastreabilidade bidirecional.
+Prioridade — herdada da v0.5, no modelo MoSCoW. A prioridade da história nunca é superior à do requisito que a origina.
+Regras de negócio — as regras listadas no fim de cada história são invariantes de negócio que a solução tem de respeitar, não repetições dos cenários.
+1.2. Separação entre o quê e o como
+As histórias descrevem comportamento observável, não implementação. Não constam dos cenários nomes de tabelas ou de campos, valores internos de estado, algoritmos, formatos de identificador ou endereços de serviços: são decisões que pertencem às equipas técnicas e que podem evoluir sem que o comportamento acordado com o negócio se altere.
+Mantêm-se, em contrapartida, as restrições que não são livres: as categorias UC-01 a UC-05 acordadas com o DPO, a distinção entre consentimentos de comunicação e de partilha de dados (que determina obrigações legais distintas na revogação), os estados do ciclo de vida do consentimento e do texto legal, e o caminho de integração corporativo já mandatado para o Grupo.
+As propostas técnicas de apoio — contratos de interface e modelo de dados — estão nos anexos (secções 9 e 10) e têm valor indicativo: servem de ponto de partida para as equipas acordarem entre si, não de especificação imposta.
+1.3. Definição de pronto para desenvolvimento
+Uma história só entra em sprint quando: os requisitos associados estão validados pelas áreas de negócio; os pontos em aberto do DPO que a condicionam estão decididos; os contratos de interface de que depende estão acordados (ver secção 9); e os critérios de aceitação estão confirmados pelo Product Owner.
+1.4. Definição de concluído
+Uma história considera-se concluída quando todos os cenários BDD estão automatizados e a passar; a cobertura de testes cumpre o limiar definido pela equipa; o registo de auditoria das operações abrangidas está a ser gerado; os critérios de acessibilidade se aplicam quando há interface; e a documentação de API ou de evento foi atualizada.
+1.5. Invariantes que atravessam todo o caderno
+As regras seguintes atravessam todo o caderno e devem ser respeitadas mesmo quando não estão repetidas em cada história:
+Nível folha — o consentimento é sempre persistido ao nível folha (categoria × sub-opção); a checkbox de nível superior é um controlo de interface e nunca um consentimento em si.
+Ação afirmativa — nenhuma opção surge pré-selecionada e nenhum serviço fica condicionado à prestação de consentimento.
+Tipologia — finalidades de comunicação e de partilha de dados têm comportamentos distintos na revogação; a distinção acompanha o registo e a notificação aos sistemas.
+Decisão mais recente — prevalece sempre a decisão mais recente do titular, avaliada pelo momento em que a tomou.
+Identificador — o e-mail do titular é o identificador por excelência da recolha e o identificador do registo de consentimento; os demais identificadores são auxiliares e resolvem-se para o e-mail.
+Consolidação pelo e-mail — decisões recolhidas com o mesmo e-mail pertencem ao mesmo titular, esteja ou não a sessão iniciada; o estado de autenticação do canal não altera a quem a decisão pertence.
+Identidade e decisão — alterar a identidade do titular, por fusão de perfis ou por alteração de e-mail, nunca cria, revoga nem expira consentimentos.
+2. Mapa de entregáveis e cobertura
+As treze peças a construir, a equipa responsável e o número de histórias detalhadas neste caderno.
+Peça
+Entregável
+Equipa
+US
+S1.1
+Consent DB — modelo de dados
+Dev Backend
+6
+S1.2
+Motor de ciclo de vida
+Dev Backend
+9
+S1.3
+Identity Resolution (Global_ID)
+Dev Backend
+6
+S1.4
+Requisitos transversais (multi-tenant, i18n)
+Transversal
+5
+S2.1
+Administração e Configuração
+Frontend + Dev Backend
+11
+S3.1
+Módulo de Auditoria (log imutável)
+Dev Backend + Segurança
+3
+S3.2
+Frontend de Consulta e Auditoria
+Frontend + Dev Backend
+5
+S4.1
+Microfrontend de Consentimentos (React)
+DNI + Frontend
+12
+S5.1
+API Gateway e segurança
+Integrações + Segurança
+3
+S5.2
+APIs de ingestão e consulta
+Dev Backend
+7
+S5.3
+Eventos e tópico Kafka
+Arquitetura + Integrações
+5
+S5.4
+Conector MuleSoft para Data Cloud
+Integrações + Salesforce
+4
+T1
+Autenticação e RBAC federado
+Segurança / IAM
+3
+T2
+Fundações não funcionais
+Arquitetura + Dev Backend + SRE
+3
+T3
+Multi-tenant (CTT / CTT Express)
+Arquitetura + Segurança
+3
+T4
+Internacionalização (PT / ES)
+Frontend + Arquitetura
+2
+S6.1
+Gestão e exposição de conteúdos (dotCMS)
+dotCMS + Conteúdos
+5
+Total: 82 user stories distribuídas por 15 entregáveis.
+2.1. Sequência de construção e dependências
+O plano de entregáveis identifica quatro peças sem bloqueios, que podem arrancar de imediato: S3.1 (Módulo de Auditoria), S4.1 (Microfrontend), S5.1 (API Gateway) e T1 (RBAC federado). A cadeia mais longa atravessa os Blocos 1 e 5: catálogo e textos legais → S1.1 → S1.2 → S5.3 → S5.4.
+Quando a dependência é de integração e não de bloqueio, o que desbloqueia o arranque é o contrato acordado, não o sistema construído. Os contratos da secção 9 devem por isso ser fechados nas primeiras semanas: sem eles, S4.1, S2.1 e S5.4 não conseguem trabalhar em paralelo.
+3. Bloco 1 — Motor de Consentimento e Base de Dados
+O núcleo da plataforma: guarda os consentimentos e aplica as regras que determinam a sua validade. Nenhum canal comunica diretamente com este bloco — todo o acesso é mediado pelo Bloco 5.
+3.1. S1.1 — Consent DB — modelo de dados
+Repositório central dos consentimentos, preferências e chaves de identificação. Suporta a granularidade ao nível folha, o histórico imutável e a rastreabilidade exigida em auditoria.
+Equipa: Dev Backend   ·   6 user stories
+Consent DB · US-01 — Estrutura de registo de consentimento (US-S1.1-01)
+Como  Motor de Gestão de Consentimentos
+Quero  persistir um registo autónomo por cada combinação de finalidade e sub-opção
+Para  que cada decisão granular do titular seja demonstrável de forma isolada em auditoria
+Requisitos: RF-MC-04, RF-MC-05   ·   Prioridade: Must
+Cenário: Happy path — persistência de decisões granulares
+Dado que o titular "global-001" seleciona duas sub-opções da categoria "UC-03"
+E deixa por selecionar as restantes três sub-opções dessa categoria
+Quando o motor persistir a transação
+Então devem ficar registados exatamente dois consentimentos concedidos
+E cada registo deve identificar a categoria e a sub-opção a que respeita
+Regras de negócio a respeitar
+Cada registo é identificado de forma inequívoca pelo titular — pelo seu e-mail, que é o identificador do registo de consentimento —, pela categoria, pela sub-opção e pelo momento da decisão.
+Consent DB · US-02 — Histórico imutável de decisões   (US-S1.1-02)
+Como  Responsável pela Proteção de Dados
+Quero  que nenhuma alteração de consentimento sobreponha o registo anterior
+Para  poder reconstituir, em auditoria, toda a sequência de decisões de um titular
+Requisitos: RF-MC-03   ·   Prioridade: Must
+Cenário: Happy path — alteração cria novo registo
+Dado que existe um consentimento concedido para a categoria "UC-01" desde "2026-07-01T10:00:00Z"
+Quando o titular revogar esse consentimento em "2026-07-15T18:30:00Z"
+Então deve ser criado um novo registo de revogação ou alteração com o momento em que ocorreu
+E o registo original deve permanecer inalterado
+E o estado vigente da finalidade deve resultar do registo com timestamp mais recente
+Regras de negócio a respeitar
+Os registos de consentimento não podem ser alterados nem eliminados depois de criados.
+O expurgo por DSAR é a única exceção e executa-se por procedimento controlado e auditado (US-S1.3-06).
+Consent DB · US-03 — Versionamento e arquivo de textos legais   (US-S1.1-03)
+Como  Motor de Gestão de Consentimentos
+Quero  associar cada registo à versão exata do texto legal apresentada ao titular
+Para  demonstrar que o consentimento foi informado sobre o conteúdo então em vigor
+Requisitos: RF-MC-06, RF-BO-01   ·   Prioridade: Must
+Cenário: Happy path — associação à versão vigente
+Dado que a versão "v1.0.0" do texto da categoria "UC-01" se encontra publicada
+Quando um titular conceder consentimento para essa categoria
+Então o registo criado deve referenciar o identificador da versão "v1.0.0"
+Cenário: Edge case — publicação de nova versão não altera registos antigos
+Dado que existem consentimentos associados à versão "v1.0.0"
+Quando a versão "v1.1.0" for publicada e a anterior for arquivada
+Então os registos existentes devem continuar a referenciar a "v1.0.0"
+E o texto integral da versão arquivada deve permanecer consultável
+Regras de negócio a respeitar
+O conteúdo integral de todas as versões de texto legal é conservado, incluindo as arquivadas.
+A eliminação física de uma versão de texto legal nunca é permitida.
+Consent DB · US-04 — Grafo de identidades pseudonimizado   (US-S1.1-04)
+Como  Motor de Gestão de Consentimentos
+Quero  guardar os identificadores do titular apenas sob a forma de hash
+Para  permitir o cruzamento entre canais 
+Requisitos: RF-MC-08, RNF-02   ·   Prioridade: Must
+Cenário: Happy path — persistência de identificador
+Dado que é recebido o identificador de tipo "EMAIL" de um titular
+Quando o motor o registar
+Então o identificador deve ser guardado de forma pseudonimizada
+E deve manter-se a capacidade de pesquisa por email no frontend do CMP 
+Consent DB · US-05 — Rastreabilidade e evidência documental   (US-S1.1-05)
+Como  Responsável pela Proteção de Dados
+Quero  que cada registo identifique quem consentiu, quando, em que canal e sobre que texto
+Para  responder a uma auditoria da autoridade de controlo com prova completa
+Requisitos: RF-MC-06   ·   Prioridade: Must
+Cenário: Happy path — campos obrigatórios de rastreabilidade
+Dado que é submetido um novo consentimento por qualquer canal
+Quando o registo for persistido
+Então devem estar preenchidos os campos de identidade, timestamp, canal de recolha e versão do texto legal
+E a ausência de qualquer um destes campos deve impedir a persistência
+3.2. S1.2 — Motor de ciclo de vida
+Serviço que aplica as regras de negócio sobre o consentimento: aceita, atualiza, revoga, expira e valida a cobertura antes de autorizar tratamentos.
+Equipa: Dev Backend   ·   9 user stories
+Motor de Consentimento · US-01 — Registo mediante ação afirmativa   (US-S1.2-01)
+Como  Motor de Gestão de Consentimentos
+Quero  aceitar apenas consentimentos resultantes de uma ação afirmativa e inequívoca do titular
+Para  garantir a validade jurídica do consentimento nos termos do RGPD
+Requisitos: RF-MC-01   ·   Prioridade: Must
+Cenário: Happy path — opt-in explícito
+Dado que o canal submete um consentimento com decisão explícita do titular
+E a submissão identifica a versão do texto legal apresentada ao titular
+Quando o motor validar a transação
+Então o consentimento deve ficar registado como concedido
+Cenário: Edge case — submissão inválida é rejeitada sem persistir
+Dado que o canal submete um consentimento sem indicar a versão do texto legal
+Quando o motor validar a transação
+Então a transação deve ser rejeitada com erro de validação
+E nenhum registo deve ser persistido
+Exemplos: submissão sem versão de texto legal; finalidade inexistente no catálogo ativo.
+Regras de negócio a respeitar
+Toda a submissão aceite devolve um comprovativo que permite ao canal identificar a transação e demonstrar o seu conteúdo.
+Rejeições devolvem código de erro específico e não deixam registo parcial.
+Motor de Consentimento · US-02 — Atualização de decisões existentes   (US-S1.2-02)
+Como  Cliente dos CTT
+Quero  dar consentimentos novos sem que isso impacte decisões anteriores
+Para  manter as minhas preferências de privacidade atualizadas ao longo do tempo
+Requisitos: RF-MC-02, RF-MC-03   ·   Prioridade: Must
+Cenário: Happy path — alteração de estado
+Dado que existe um consentimento concedido para uma opção ou sub-opção
+Quando for recebida uma associação do mesmo identificador a um perfil diferente
+Então o motor deve desencadear o processo de fusão no perfil existente (US-S1.3-04)
+E não deve criar uma segunda associação ativa para o mesmo identificador
+E sendo a recolha de um consentimento (“Create”) nunca deve ser esmagado um consentimento já existente, mas sim atualizado uma opção que ainda não existam. Opções que já existam devem e venham em branco no pedido devem ser ignoradas.
+Cenário: Edge case — submissão idêntica ao estado atual
+Dado que existe um consentimento concedido para uma sub-opção
+Quando for submetida nova decisão de concessão para a mesma sub-opção e versão de texto
+Então o motor deve registar a transação sem alterar o estado vigente
+E o histórico deve refletir a reconfirmação com o novo timestamp
+Regras de negócio a respeitar
+A reconfirmação é registada para efeitos de prova de atualidade do consentimento.
+Motor de Consentimento · US-03 — Revogação com efeito imediato   (US-S1.2-03)
+Como  Cliente dos CTT
+Quero  conseguir gerir os meus consentimentos e fazer com que a retirada do meu consentimento produza efeito imediato
+Para  que os CTT e terceiros cessem sem demora o tratamento dos meus dados
+Requisitos: RF-MC-02, RF-API-04, RF-API-05   ·   Prioridade: Must
+Cenário: Happy path — revogação de comunicação
+Dado que o titular tem consentimento ativo para "MKT_CTT_GRUPO" (por exemplo)
+Quando revogar esse consentimento
+Então o consentimento deve passar a revogado
+E deve ser publicado um evento de revogação identificado como consentimento de comunicação
+E o CMP deve deixar de devolver a finalidade como ativa no mesmo instante
+Cenário: Happy path — revogação de partilha com terceiros
+Dado que o titular tem consentimento ativo para "SHARE_PARC_CTT" (por exemplo)
+Quando revogar esse consentimento
+Então deve ser publicado um evento identificado como consentimento de partilha de dados
+E o evento deve identificar os destinatários que devem ser notificados para cessar o tratamento
+Cenário: Edge case — falha na publicação do evento
+Dado que o barramento de eventos se encontra indisponível no momento da revogação
+Quando o motor persistir a revogação
+Então o consentimento deve ficar revogado na mesma
+E a notificação aos sistemas deve ser reenviada até haver confirmação de entrega
+E deve ser gerado um alerta operacional
+Regras de negócio a respeitar
+O registo da revogação nunca fica dependente do sucesso da notificação aos sistemas.
+A entrega do evento é garantida por sistema de retry, com monitorização das falhas.
+Motor de Consentimento · US-06 — Não-extensão automática a novas sub-opções   (US-S1.2-06)
+Como  Responsável pela Proteção de Dados
+Quero  que consentimentos já prestados não abranjam sub-opções criadas posteriormente
+Para  assegurar que o consentimento se mantém específico e informado
+Requisitos: RF-MC-10, RF-BO-03   ·   Prioridade: Must
+Cenário: Happy path — nova sub-opção não é coberta
+Dado que o titular consentiu "SHARE_PARC_CTT" (por exemplo) sobre a versão "v1.0.0" do texto legal
+E é adicionada a sub-opção "Retalho alimentar", gerando a versão "v1.1.0"
+Quando um sistema consultar o estado do titular para essa nova sub-opção
+Então a resposta deve indicar ausência de consentimento para "Retalho alimentar"
+E as sub-opções da versão anterior devem manter-se ativas
+Cenário: Edge case — tratamento sobre sub-opção não coberta
+Dado que um sistema tenta tratar dados ao abrigo de uma sub-opção não coberta pela versão aceite
+Quando executar a verificação prévia junto do CMP
+Então o CMP deve devolver resposta negativa
+Regras de negócio a respeitar
+A cobertura é avaliada pela versão do texto legal aceite, e não apenas pela categoria.
+Motor de Consentimento · US-08 — Verificação prévia de tratamento   (US-S1.2-08)
+Como  Sistema consumidor do ecossistema CTT
+Quero  confirmar junto do CMP se posso tratar os dados de um titular
+Para  não executar campanhas ou tratamentos sem base de consentimento válida
+Requisitos: RF-MC-02, RF-API-02   ·   Prioridade: Must
+Cenário: Happy path — consentimento válido
+Dado que o titular tem consentimento concedido e dentro do prazo para a finalidade consultada
+Quando o sistema consultar o CMP
+Então a resposta deve autorizar o tratamento
+Motor de Consentimento · US-09 — Ação em nome do titular: retirar sim, conceder não   (US-S1.2-09)   ▲ NOVO
+Como  Responsável pela Proteção de Dados
+Quero  que eu possa retirar, mas nunca conceder, consentimento em nome do titular
+Para  preservar a ação afirmativa como única origem admissível do consentimento
+Requisitos: RF-MC-01, RF-MC-02   ·   Prioridade: Must
+Cenário: Happy path — revogação submetida por utilizador interno
+Dado que o motor recebe uma revogação cujo autor é um utilizador interno com acesso ao perfil de DPO e não o titular cliente
+Quando validar a transação
+Então a revogação deve ser aceite
+E o registo deve identificar que a decisão foi executada por terceiro a pedido do titular
+Ver também: US-S2.1-10 (execução da remoção no Backoffice) e US-S2.1-11 (registo de origem e prova do pedido).
+3.3. S1.3 — Identity Resolution (Global_ID)
+Mecanismo que reconhece o mesmo titular entre canais distintos e consolida os seus consentimentos. O e-mail do titular é o identificador por excelência da recolha e o identificador do registo de consentimento; o Global_ID ancora-se no e-mail e os restantes identificadores são auxiliares que se resolvem para ele. O mesmo e-mail identifica o mesmo titular esteja ou não a sessão iniciada, o que permite consolidar num único perfil as decisões tomadas antes e depois de o titular se identificar; a alteração do e-mail do titular preserva as decisões já registadas.
+Equipa: Dev Backend   ·   6 user stories
+Identity Resolution · US-01 — E-mail como identificador único do consentimento   (US-S1.3-01)
+Como  Motor de Gestão de Consentimentos
+Quero  usar o e-mail do titular como identificador único de cada consentimento
+Para  que as decisões do mesmo titular fiquem sempre associadas a uma identidade só
+Requisitos: RF-MC-08   ·   Prioridade: Must
+Cenário: Happy path — consentimento associado ao e-mail
+Dado que é recolhido um consentimento com o e-mail do titular
+Quando o motor o registar
+Então o consentimento deve ficar associado a esse e-mail como identificador único
+Cenário: Happy path — mesmo e-mail, mesma identidade
+Dado que chega nova decisão com um e-mail já conhecido
+Quando o motor a processar
+Então deve ser associada ao mesmo titular, sem criar uma identidade nova
+Regras de negócio a respeitar
+O e-mail do titular é o identificador único do consentimento.
+Os restantes identificadores recolhidos nos canais são auxiliares e resolvem-se para o e-mail (ver US-S1.3-01).
+Identity Resolution · US-04 — Consolidação das decisões tomadas com e sem sessão iniciada   (US-S1.3-04)   ▲ NOVO
+Como  Cliente dos CTT
+Quero  que as decisões que tomo antes e depois de iniciar sessão contem para o mesmo registo
+Para  não ter de repetir as minhas escolhas por me ter identificado ou não
+Requisitos: RF-MC-09, RF-MS-06   ·   Prioridade: Must
+Cenário: Happy path — de não identificado para identificado
+Dado que o cliente decidiu, sem sessão iniciada, indicando o e-mail "cliente.exemplo@ctt.pt"
+E cria depois a Conta CTT com esse mesmo e-mail e toma novas decisões
+Quando as novas decisões forem processadas
+Então devem ficar associadas ao mesmo perfil das decisões anteriores
+E devem atualizar as decisões anteriores sobre as mesmas finalidades
+E as decisões anteriores devem permanecer no histórico
+Cenário: Happy path — de identificado para não identificado
+Dado que o cliente tem Conta CTT associada ao e-mail "cliente.exemplo@ctt.pt"
+E toma decisões noutro canal, sem sessão iniciada, indicando esse mesmo e-mail
+Quando as decisões forem processadas
+Então devem atualizar as decisões do perfil da sua conta
+E o resultado deve ser o mesmo que teria se tivesse iniciado sessão
+Cenário: Happy path — estado consolidado no centro de auto-gestão
+Dado que o cliente decidiu em canais diferentes, com e sem sessão iniciada
+Quando aceder ao centro de auto-gestão (US-S4.1-01)
+Então deve ver um único estado por sub-opção, resultante da decisão mais recente
+Cenário: Edge case — decisão sem sessão posterior a decisão com sessão
+Dado que existe uma decisão tomada com sessão iniciada sobre uma sub-opção
+Quando for recebida, com o mesmo e-mail e sem sessão iniciada, uma decisão posterior sobre essa sub-opção
+Então sendo a recolha de um consentimento (“Create”) nunca deve ser esmagado um consentimento já existente, mas sim atualizado uma opção que ainda não existam. Opções que já existam devem e venham em branco no pedido devem ser ignorada (ver US1.2 02). No use case de gestão é que devem ser atualizadas as opções selecionadas anteriormente, podendo acrescentar e retirar.
+Identity Resolution · US-06 — Alteração do e-mail associado ao titular   (US-S1.3-06)   ▲ NOVO
+Como  Cliente dos CTT
+Quero  que a alteração do e-mail da minha conta ctt não me faça perder os consentimentos que já dei
+Para  manter as minhas preferências quando mudo de endereço de correio eletrónico
+Nota: cenário para precaver opção futura que ainda não existe atualmente na conta CTT
+Requisitos: a criar na v0.5 (alteração de e-mail do titular)   ·   Prioridade: Could
+Cenário: Happy path — alteração comunicada ao CMP
+Dado que o titular altera na sua conta o e-mail de "antigo@exemplo.pt" para "novo@exemplo.pt"
+Quando o CMP receber a comunicação da alteração
+Então o perfil do titular deve passar a estar associado ao novo e-mail
+E todas as decisões existentes devem manter-se associadas a esse perfil
+E nenhum consentimento deve ser criado ou revogado por efeito da alteração
+Cenário: Happy path — decisões posteriores com o novo e-mail
+Dado que a alteração foi processada
+Quando for recebida uma decisão com o novo e-mail
+Então deve ser associada ao mesmo perfil
+Cenário: Edge case — e-mail antigo reutilizado por outra pessoa
+Dado que a alteração foi processada
+Quando for recebida uma decisão com o e-mail antigo
+Então não deve ser associada ao perfil do titular
+Cenário: Edge case — novo e-mail já associado a outro perfil
+Dado que o novo e-mail já está associado a um perfil existente
+Quando a alteração for processada
+Então deve ser desencadeado o processo de fusão de perfis (US-S1.3-04)
+3.4. S1.4 — Requisitos transversais (multi-tenant e internacionalização)
+T3 — Multi-tenant (empresas do Grupo: CTT e CTT Express)
+Segregação por empresa do Grupo, com dados, configuração e acessos isolados por tenant. A fase inicial contempla dois tenants — CTT e CTT Express — e o modelo permite acrescentar novos sem alterar a arquitetura.
+Multi-tenant · US-01 — Segregação de dados e configuração por tenant   (US-T3-01)
+Como Responsável pela Proteção de Dados
+Quero que os consentimentos, catálogos e textos legais de cada empresa do Grupo fiquem isolados por tenant
+Para garantir que os dados de uma empresa nunca são acessíveis a partir de outra
+Requisitos: RNF (isolamento)   ·   Prioridade: Must
+Cenário: Happy path — isolamento de dados
+Dado que existem os tenants "CTT" e "CTT Express"
+E um titular concedeu consentimentos no tenant "CTT"
+Quando um administrador operar no contexto do tenant "CTT Express"
+Então esses consentimentos não devem ser visíveis nem pesquisáveis
+Cenário: Edge case — mesmo e-mail em dois tenants
+Dado que o mesmo e-mail existe como titular em "CTT" e em "CTT Express"
+Quando for consultado em cada tenant
+Então cada tenant deve devolver apenas as decisões tomadas no seu próprio contexto
+Regras de negócio a respeitar
+Cada registo pertence a exatamente um tenant e nunca é partilhado entre tenants.
+A fase inicial contempla dois tenants — CTT e CTT Express; o modelo permite acrescentar novos sem alterar a arquitetura.
+Multi-tenant · US-02 — Perfis e acessos com âmbito de tenant   (US-T3-02)
+Como Responsável de Segurança
+Quero que os perfis e as permissões sejam atribuídos por tenant
+Para que um administrador de uma empresa só opere sobre o seu próprio tenant (privilégio mínimo)
+Requisitos: RF-BO-08   ·   Prioridade: Must
+Cenário: Happy path — acesso restrito ao tenant
+Dado que um utilizador tem o perfil "DPO_Admin" apenas no tenant "CTT"
+Quando tentar aceder à administração do tenant "CTT Express"
+Então o acesso deve ser negado
+Cenário: Happy path — utilizador multi-tenant
+Dado que um utilizador tem perfis em "CTT" e "CTT Express"
+Quando iniciar sessão
+Então deve poder selecionar o tenant ativo e todas as operações passam a decorrer nesse contexto
+Regras de negócio a respeitar
+A matriz de permissões é avaliada em conjunto com o tenant ativo.
+A troca de tenant fica registada no diário de auditoria.
+Multi-tenant · US-03 — Configuração independente por tenant   (US-T3-03)
+Como Gestor de negócio
+Quero gerir o catálogo de categorias, os textos legais e os prazos de retenção de forma independente por tenant
+Para refletir as finalidades e parcerias específicas de cada empresa do Grupo
+Requisitos: RF-BO-03   ·   Prioridade: Should
+Cenário: Happy path — publicação isolada
+Dado que publico um texto legal no tenant "CTT"
+Quando um cliente do tenant "CTT Express" abrir o seu centro de preferências
+Então não deve ver esse texto nem a categoria associada
+Regras de negócio a respeitar
+Cada tenant tem o seu próprio catálogo e versões de texto legal.
+T4 — Internacionalização (Português e Espanhol)
+Toda a interface e os textos legais existem em português e espanhol; a publicação de um texto legal exige ambas as línguas.
+Internacionalização · US-01 — Interface disponível em português e espanhol   (US-T4-01)
+Como Cliente / Utilizador interno
+Quero usar a plataforma em português ou em espanhol
+Para interagir na minha língua preferida
+Requisitos: RNF (i18n)   ·   Prioridade: Must
+Cenário: Happy path — seleção de idioma
+Dado que a interface está disponível em "PT" e "ES"
+Quando o utilizador seleciona o idioma "ES"
+Então todos os elementos de interface (menus, ações, mensagens) devem ser apresentados em espanhol
+Cenário: Happy path — idioma por defeito
+Dado que um utilizador acede pela primeira vez
+Quando a página carrega
+Então o idioma inicial segue a preferência do utilizador/browser, com português como recurso por defeito
+Regras de negócio a respeitar
+Todos os textos de interface têm tradução em PT e ES; nenhuma cadeia fica apenas numa língua.
+O idioma é uma preferência do utilizador e não altera o significado das operações.
+Internacionalização · US-02 — Textos legais e centro de preferências bilingues   (US-T4-02)
+Como Responsável pela Proteção de Dados
+Quero que cada versão de texto legal exista em PT e ES e que o titular consinta na língua que lhe foi apresentada
+Para assegurar consentimento informado e prova em ambas as línguas
+Requisitos: RF-MC-06   ·   Prioridade: Must
+Cenário: Happy path — consentimento na língua apresentada
+Dado que a versão "v1.0.0" de um texto legal existe em PT e ES
+Quando um titular consente com a interface em espanhol
+Então o registo deve guardar que o texto foi apresentado em "ES" e a versão exata
+Cenário: Edge case — publicação incompleta
+Dado que um texto legal só tem a versão portuguesa preenchida
+Quando o DPO tentar publicá-lo
+Então a publicação deve ser impedida até a versão espanhola estar disponível
+Regras de negócio a respeitar
+Uma versão de texto legal só pode ser publicada quando existe em PT e ES.
+O registo de consentimento guarda a língua apresentada ao titular.
+4. Bloco 2 — Frontend do CMP (Consulta, Auditoria e Administração)
+A vista interna, de leitura e de administração. Serve o DPO, a auditoria e a conformidade para investigar e demonstrar o que aconteceu, com o que cada perfil pode fazer determinado pelo controlo de acessos.
+4.1. S3.1 — Módulo de Auditoria (log imutável)
+Serviço e repositório que registam de forma inalterável todas as operações relevantes da plataforma, com encadeamento criptográfico que permite detetar qualquer adulteração.
+Equipa: Dev Backend + Segurança   ·   3 user stories
+Módulo de Auditoria · US-01 — Registo de log com encadeamento de hashes   (US-S3.1-01)
+Como  Responsável de Segurança
+Quero  que cada registo de auditoria dependa criptograficamente do anterior
+Para  que a alteração ou remoção de qualquer registo se torne detetável
+Requisitos: RF-CA-02   ·   Prioridade: Should
+Cenário: Happy path — encadeamento sequencial
+Dado que existe um log de auditoria com registos anteriores
+Quando for registada uma nova operação
+Então o novo registo deve ficar encadeado de forma criptográfica ao registo imediatamente anterior
+E o novo registo não deve poder ser alterado depois de criado
+Cenário: Edge case — primeiro registo da cadeia
+Dado que o log de auditoria se encontra vazio
+Quando for registada a primeira operação
+Então o primeiro registo deve ficar ancorado a um ponto de partida conhecido e documentado
+E esse ponto de partida deve ficar documentado para permitir a verificação futura
+Regras de negócio a respeitar
+Cada registo depende criptograficamente do conteúdo do evento e do registo anterior, de modo que a alteração de um invalide todos os seguintes.
+O arquivo de auditoria não admite alteração nem eliminação de registos.
+Módulo de Auditoria · US-02 — Verificação de integridade da cadeia   (US-S3.1-02)
+Como  Auditor de Segurança
+Quero  poder verificar que a cadeia de registos não foi adulterada
+Para  demonstrar perante uma auditoria que os registos são fidedignos
+Requisitos: RF-CA-02   ·   Prioridade: Should
+Cenário: Happy path — cadeia íntegra
+Dado que existe um log de auditoria com registos encadeados
+Quando for executada a verificação de integridade sobre um intervalo temporal
+Então o relatório deve confirmar a integridade de todos os registos do intervalo
+Cenário: Edge case — adulteração detetada
+Dado que um registo de auditoria foi alterado por via direta, fora da aplicação
+Quando for executada a verificação de integridade
+Então o relatório deve identificar o primeiro registo em que a cadeia deixa de ser válida
+E deve ser gerado um alerta de segurança para o DPO e para a equipa de Segurança
+Regras de negócio a respeitar
+A verificação pode ser executada sobre intervalos temporais ou sobre a cadeia completa.
+4.2. S3.2 — Frontend de Consulta e Auditoria
+Interface web para utilizadores internos: pesquisa de logs, consulta do histórico por titular, relatórios de integridade e indicadores agregados de conformidade.
+Equipa: Frontend + Dev Backend   ·   5 user stories
+Frontend de Consulta e Auditoria · US-01 — Pesquisa de logs de auditoria   (US-S3.2-01)
+Como  Responsável pela Proteção de Dados
+Quero  pesquisar o diário de auditoria por período e por administrador
+Para  investigar operações concretas quando surge uma questão de conformidade
+Requisitos: RF-CA-01   ·   Prioridade: Must
+Cenário: Happy path — pesquisa por período e ator
+Dado que o utilizador está autenticado com perfil autorizado
+Quando pesquisar operações entre duas datas e filtrar por um administrador
+Então deve obter a lista de operações desse administrador no intervalo indicado
+E cada resultado deve indicar operação, objeto afetado e timestamp
+Cenário: Edge case — pesquisa sem resultados
+Dado que não existem operações no intervalo pesquisado
+Quando a pesquisa for executada
+Então deve ser apresentada uma mensagem de ausência de resultados
+E a própria consulta deve ficar registada no log de auditoria
+Regras de negócio a respeitar
+Filtros mínimos: intervalo temporal, ator, tipo de operação e objeto.
+Frontend de Consulta e Auditoria · US-02 — Consulta do histórico de um titular   (US-S3.2-02)
+Como  Responsável pela Proteção de Dados
+Quero  consultar o histórico completo de decisões de um titular
+Para  responder a um pedido de exercício de direitos com informação exata
+Requisitos: RF-CA-04   ·   Prioridade: Must
+Cenário: Happy path — histórico completo
+Dado que o utilizador pesquisa um titular pelo seu identificador
+Quando a consulta for executada
+Então deve ser apresentada a sequência cronológica de todas as decisões
+E cada decisão deve indicar finalidade, sub-opção, canal, versão do texto legal, estado e timestamp
+Cenário: Edge case — titular resultante de fusão de perfis
+Dado que o perfil consultado resultou da fusão de um perfil anónimo com um conhecido
+Quando o histórico for apresentado
+Então devem constar as decisões de ambos os perfis
+E o momento da fusão deve estar assinalado na cronologia
+Cenário: Edge case — titular expurgado
+Dado que o titular exerceu o direito ao apagamento
+Quando o histórico for consultado
+Então não devem ser apresentados dados do titular
+E deve ser apresentada a evidência de execução do expurgo
+Regras de negócio a respeitar
+A vista é de leitura e de administração; não existe qualquer ação de alteração disponível.
+4.3. S2.1 — Administração e Configuração
+Ecrãs de administração para o DPO, equipas legais e de negócio: textos legais, catálogo de categorias e parceiros, posicionamento de responsabilidade e acessos.
+Equipa: Frontend + Dev Backend   ·   11 user stories
+Administração e Configuração · US-09 — Aplicação da matriz de permissões no Backoffice   (US-S2.1-09)
+Como  Responsável de Segurança
+Quero  que cada perfil só possa executar as operações que lhe competem
+Para  aplicar o princípio do privilégio mínimo na administração da plataforma
+Requisitos: RF-BO-08   ·   Prioridade: Must
+Cenário: Happy path — perfis distintos, capacidades distintas
+Dado que existem os perfis "DPO_Admin", "Consulta_Geral" e "Marketing_Analitico"
+Quando cada um aceder ao Backoffice
+Então o "DPO_Admin" deve poder gerir o catálogo de categorias e parceiros
+E o "Consulta_Geral" deve poder consultar indicadores agregados e o histórico por titular, sem alterar nada
+E o "Marketing_Analitico" deve poder consultar apenas indicadores e análises agregadas
+Administração e Configuração · US-10 — Remoção de consentimentos em nome do titular   (US-S2.1-10)   ▲ NOVO
+Como  responsável por proteção de dados (perfil DPO_Admin)
+Quero  remover os consentimentos de contacto de um titular a partir do Backoffice
+Para  dar resposta a pedidos de remoção recebidos por canais não digitais
+Requisitos: RF-MC-02, RF-BO-08   ·   Prioridade: Must
+Cenário: Happy path — remoção das finalidades de comunicação
+Dado que recebo o pedido de remoção de contactos de um titular identificado pelo seu e-mail
+E tenho perfil com permissão para operar em nome do titular
+Quando aplicar a remoção sobre as finalidades de comunicação desse titular
+Então todas as finalidades de comunicação ativas devem passar a revogadas
+E cada revogação deve produzir os mesmos efeitos de uma revogação feita pelo próprio titular
+E as finalidades de partilha de dados não devem ser alteradas se não constarem do pedido
+Cenário: Happy path — pedido que abrange também a partilha de dados
+Dado que o pedido do titular abrange igualmente as finalidades de partilha de dados
+Quando aplicar a remoção sobre essas finalidades
+Então devem ser notificados os destinatários dos dados, tal como numa revogação feita pelo titular
+Ver também: US-S1.2-09 (regra: terceiro só pode retirar, nunca conceder) e US-S2.1-11 (registo de origem e prova).
+Administração e Configuração · US-11 — Origem e prova do pedido do titular   (US-S2.1-11)   ▲ NOVO
+Como  Responsável pela Proteção de Dados
+Quero  que cada revogação feita em nome do titular registe a origem e a prova do pedido
+Para  demonstrar perante a autoridade de controlo que a alteração foi pedida pelo titular
+Requisitos: RF-CA-01, RF-MC-06   ·   Prioridade: Must
+Cenário: Happy path — origem obrigatória
+Dado que vou aplicar uma revogação em nome de um titular
+Quando submeter a operação sem indicar o canal por onde o pedido foi recebido
+Então a operação deve ser recusada
+E devem ser pedidos o canal de origem e a referência do pedido
+Cenário: Happy path — evidência associada a cada registo
+Dado que indico o canal, a data do pedido e a referência que o identifica
+Quando a revogação for persistida
+Então cada registo criado deve conservar o utilizador que a executou, o canal de origem e a referência do pedido
+E essa informação deve ficar visível na consulta do histórico do titular (US-S3.2-02)
+Cenário: Edge case — decisão posterior do próprio titular
+Dado que existe uma revogação aplicada em nome do titular
+Quando o próprio titular alterar depois essa mesma finalidade num canal digital
+Então prevalece a decisão mais recente
+E ambos os registos permanecem consultáveis no histórico
+Regras de negócio a respeitar
+Nenhuma revogação em nome do titular é persistida sem canal de origem e referência do pedido.
+A referência do pedido não substitui a prova documental, conservada pela área que rececionou o pedido; o CMP conserva a ligação a essa prova.
+O utilizador que executa a operação fica sempre imputado, não sendo admitidas contas partilhadas (US-T1-03).
+Ver também: US-S1.2-09 (regra de base) e US-S2.1-10 (execução da remoção no Backoffice).
+Administração e Configuração · US-14 — Gestão das permissões de cada perfil (matriz operação × perfil)   (US-S2.1-14)
+Como  Responsável pela Proteção de Dados (perfil DPO_Admin)
+Quero  gerir, numa matriz de operação × perfil, o que cada perfil pode fazer
+Para  ajustar as permissões da plataforma sem depender de um novo desenvolvimento
+Requisitos: RF-BO-08   ·   Prioridade: Should
+Cenário: Happy path — acesso à matriz de permissões
+Dado que o utilizador tem o perfil DPO_Admin
+Quando aceder à secção de gestão de perfis
+Então deve ver uma matriz com as operações da plataforma em linha e os três perfis em coluna
+E cada célula deve indicar se a operação está atribuída ao perfil
+Cenário: Happy path — alterar uma permissão
+Dado que o DPO_Admin está na matriz de permissões
+Quando ativar ou desativar uma célula de operação × perfil
+Então a alteração deve passar a vigorar para esse perfil
+E a alteração deve ficar registada no log de auditoria com autor e timestamp
+Cenário: Edge case — os três perfis são fixos
+Dado que o DPO_Admin está na gestão de perfis
+Quando procurar criar, renomear ou eliminar um perfil
+Então essa ação não deve estar disponível
+E apenas deve ser possível editar as capacidades dos perfis existentes
+Cenário: Edge case — efeito imediato na sessão dos utilizadores
+Dado que uma permissão de um perfil é alterada
+Quando um utilizador com esse perfil executar a operação afetada
+Então deve passar a aplicar-se a permissão atualizada
+Cenário: Edge case — salvaguarda do administrador
+Dado que o DPO_Admin está na matriz de permissões
+Quando tentar desmarcar a capacidade de gerir permissões no próprio perfil DPO_Admin
+Então essa célula deve permanecer bloqueada e não deve ser possível removê-la
+E deve ser apresentada a indicação de que a plataforma tem de manter sempre um perfil administrador
+Regras de negócio a respeitar
+A gestão das permissões de perfil está reservada ao perfil DPO_Admin.
+Os três perfis (DPO_Admin, Consulta_Geral, Marketing_Analitico) são fixos: a matriz edita as capacidades de cada um, não cria perfis novos.
+O DPO_Admin pode reatribuir qualquer capacidade a qualquer perfil; a matriz não impõe travas por operação.
+Toda a alteração à matriz é uma operação administrativa e fica no log de auditoria (ver US-T1-03).
+A matriz é a fonte única das permissões efetivas aplicadas pelo controlo de acessos (US-T1-02).
+Salvaguarda: a capacidade de gerir permissões não pode ser removida do perfil DPO_Admin — a matriz impede desmarcar essa célula, para que a plataforma nunca fique sem administrador.
+Referência: corresponde ao ecrã “Operação × Perfil” do protótipo do Frontend interno do CMP.
+4.4. T1 — Autenticação e RBAC federado
+Define quem entra no Backoffice e no Frontend do CMP e o que pode fazer, por integração com o fornecedor de identidade corporativo do Grupo.
+Equipa: Segurança / IAM   ·   3 user stories
+Autenticação e RBAC · US-01 — Autenticação federada com o IdP corporativo   (US-T1-01)
+Como  Utilizador interno do Grupo CTT
+Quero  aceder às aplicações do CMP com as credenciais corporativas
+Para  não ter de gerir mais um conjunto de credenciais
+Requisitos: RF-BO-08, RNF-05   ·   Prioridade: Must
+Cenário: Happy path — autenticação bem-sucedida
+Dado que o utilizador possui conta ativa no fornecedor de identidade corporativo
+Quando aceder ao Backoffice ou ao Frontend do CMP
+Então deve ser autenticado por federação sem introduzir credenciais próprias da aplicação
+E os perfis atribuídos devem ser obtidos a partir do fornecedor de identidade
+Cenário: Edge case — conta desativada
+Dado que a conta corporativa do utilizador foi desativada
+Quando tentar aceder às aplicações do CMP
+Então o acesso deve ser negado
+E as sessões ativas desse utilizador devem ser terminadas
+Regras de negócio a respeitar
+A federação assenta nos protocolos suportados pelo fornecedor de identidade corporativo.
+A gestão do ciclo de vida das contas permanece no IdP corporativo.
+Autenticação e RBAC · US-02 — Atribuição de perfis e matriz de permissões   (US-T1-02)
+Como  Responsável de Segurança
+Quero  que cada utilizador receba apenas o perfil adequado à sua função
+Para  aplicar o princípio do privilégio mínimo em toda a plataforma
+Requisitos: RF-BO-08   ·   Prioridade: Must
+Cenário: Happy path — perfis reconhecidos
+Dado que o utilizador tem atribuído no IdP um dos perfis do CMP
+Quando se autenticar
+Então a aplicação deve reconhecer o perfil e aplicar a matriz de permissões correspondente
+Cenário: Edge case — utilizador sem perfil atribuído
+Dado que o utilizador se autentica com sucesso mas não tem perfil do CMP atribuído
+Quando aceder à aplicação
+Então não deve obter acesso a qualquer funcionalidade
+E deve ser apresentada indicação de que é necessário solicitar perfil
+Regras de negócio a respeitar
+Perfis: DPO_Admin (administração), Consulta_Geral (acesso geral de leitura) e Marketing_Analitico (análises).
+Matriz de permissões por perfil
+Capacidade
+DPO_Admin
+Consulta_Geral
+Marketing_Analitico
+Gerir catálogo de categorias e parceiros
+Sim
+Não
+Não
+Consultar histórico individual por titular
+Sim
+Sim
+Não
+Consultar logs de auditoria e integridade
+Sim
+Sim
+Não
+Consultar indicadores e análises agregadas
+Sim
+Sim
+Sim
+Executar qualquer alteração de configuração
+Sim
+Não
+Não
+Gerir permissões de perfis (fixo no DPO_Admin)
+Sim
+Não
+Não
+Autenticação e RBAC · US-03 — Rastreabilidade das operações por utilizador   (US-T1-03)
+Como  Auditor de Segurança
+Quero  que cada operação administrativa fique associada a um utilizador identificado
+Para  poder imputar responsabilidade em caso de incidente
+Requisitos: RF-BO-08, RF-CA-01   ·   Prioridade: Must
+Cenário: Happy path — imputação de operações
+Dado que um utilizador executa uma operação no Backoffice
+Quando a operação for concluída
+Então o log de auditoria deve registar a identidade do utilizador, o perfil usado e o timestamp
+Cenário: Edge case — operação executada por serviço
+Dado que uma operação é executada por um processo automático
+Quando for registada
+Então deve ficar identificada a conta de serviço responsável
+Regras de negócio a respeitar
+Não são admitidas contas partilhadas para operações administrativas.
+5. Bloco 3 — Microsite (Cliente Externo)
+A cara da plataforma para o cliente final. É o único bloco que o titular dos dados chega a ver, e o único onde o consentimento é efetivamente recolhido junto da pessoa.
+5.1. S4.1 — Microfrontend de Consentimentos (React)
+Componente reutilizável de recolha e auto-gestão de consentimentos, embutido na Conta CTT, portais e apps, com UX/UI da equipa DNI e sem padrões manipulativos.
+Equipa: DNI + Frontend   ·   12 user stories
+Microfrontend de Consentimentos · US-01 — Consulta do estado atual (jornada de gestão)   (US-S4.1-01)
+Como  Cliente dos CTT
+Quero  ver num único local todos os meus consentimentos ativos e inativos
+Para  perceber de imediato o que autorizei e o que recusei
+Requisitos: RF-MS-01   ·   Prioridade: Must
+Cenário: Happy path — estado agregado nas cinco categorias
+Dado que o cliente tem consentimentos registados
+Quando aceder ao centro de auto-gestão
+Então devem ser apresentadas as cinco categorias com o estado atual de cada sub-opção
+E o estado apresentado deve corresponder ao que o CMP devolve nesse momento
+Cenário: Edge case — cliente sem consentimentos
+Dado que o cliente nunca prestou qualquer consentimento
+Quando aceder ao centro de auto-gestão
+Então todas as sub-opções devem surgir desativadas
+E não deve ser sugerido, por texto ou destaque visual, que a ativação é a opção esperada
+Regras de negócio a respeitar
+O estado apresentado provém sempre do CMP; a interface nunca o presume.
+Microfrontend de Consentimentos · US-02 — Gestão granular por sub-opção (US-S4.1-02)
+Como  Cliente dos CTT
+Quero  ativar ou desativar isoladamente cada sub-opção
+Para  controlar com precisão que comunicações recebo e que dados são partilhados
+Requisitos: RF-MS-02, RF-MC-04   ·   Prioridade: Must
+Cenário: Happy path — seleção isolada
+Dado que o cliente está na categoria "UC-03" com cinco sub-opções
+Quando ativar apenas duas delas e submeter
+Então devem ser registados dois consentimentos, um por cada sub-opção ativada
+E as restantes três não devem gerar qualquer registo de consentimento
+Cenário: Happy path — desativação isolada
+Dado que o cliente tem quatro sub-opções ativas numa categoria
+Quando desativar apenas uma delas
+Então apenas essa sub-opção deve passar a revogada
+E as restantes devem manter-se ativas
+Regras de negócio a respeitar
+Cada interruptor corresponde a uma sub-opção de uma categoria e é independente dos restantes.
+Microfrontend de Consentimentos · US-03 — Checkbox-pai com três estados   (US-S4.1-03)
+Como  Cliente dos CTT
+Quero  ver de relance se uma categoria está totalmente, parcialmente ou nada selecionada
+Para  compreender o meu estado sem ter de expandir todas as secções
+Requisitos: RF-MS-03   ·   Prioridade: Must
+Cenário: Happy path — estado parcial
+Dado que uma categoria tem cinco sub-opções e três estão ativas
+Quando o cliente visualizar a categoria
+Então a checkbox de nível superior deve apresentar o estado indeterminado
+Cenário: Happy path — seleção em cascata
+Dado que uma categoria tem todas as sub-opções desativadas
+Quando o cliente ativar a checkbox de nível superior
+Então todas as sub-opções dessa categoria devem ficar ativas
+E deve ser registado um consentimento por cada sub-opção, e nenhum para a checkbox-pai
+Cenário: Edge case — desmarcação em cascata
+Dado que uma categoria tem todas as sub-opções ativas
+Quando o cliente desativar a checkbox de nível superior
+Então todas as sub-opções devem ser revogadas individualmente
+Regras de negócio a respeitar
+O estado da checkbox-pai é derivado na interface e nunca é persistido.
+Microfrontend de Consentimentos · US-04 — Controlo global “Aceito todos”   (US-S4.1-04)
+Como  Cliente dos CTT
+Quero  poder aceitar tudo numa só ação
+Para  não ter de percorrer todas as categorias quando essa é a minha vontade
+Requisitos: RF-MS-03   ·   Prioridade: Must
+Cenário: Happy path — seleção total em cascata síncrona
+Dado que o cliente está no formulário de recolha com todas as opções desativadas
+Quando ativar a opção “Aceito todos os tipos de comunicação e partilha de dados”
+Então todas as sub-opções de todos os blocos devem ficar ativas numa só ação
+E devem ser persistidos registos granulares, um por cada sub-opção
+Cenário: Edge case — desmarcação individual após aceitar todos
+Dado que o cliente ativou “Aceito todos”
+Quando desativar uma sub-opção específica
+Então a opção global deve deixar de estar marcada
+E as restantes sub-opções devem manter-se ativas
+Regras de negócio a respeitar
+“Aceito todos” é um atalho de seleção e não constitui, por si só, um consentimento persistido.
+Microfrontend de Consentimentos · US-05 — Controlos de expandir e colapsar   (US-S4.1-05)
+Como  Cliente dos CTT
+Quero  expandir ou colapsar todas as secções de uma vez
+Para  poder ler o detalhe completo ou ter uma vista resumida, conforme prefira
+Requisitos: RF-MS-03   ·   Prioridade: Must
+Cenário: Happy path — expandir e colapsar
+Dado que o cliente está no formulário com as secções colapsadas
+Quando acionar “Expandir todos”
+Então todas as secções de unidade de negócio devem ficar expandidas
+E o estado dos interruptores de consentimento não deve sofrer qualquer alteração
+Cenário: Edge case — independência face à seleção
+Dado que o cliente tem sub-opções ativas e inativas
+Quando colapsar todas as secções
+Então nenhum consentimento deve ser alterado nem submetido
+Regras de negócio a respeitar
+O estado de expansão é puramente de interface e não é guardado como decisão do cliente.
+Microfrontend de Consentimentos · US-06 — Ausência de pré-seleção   (US-S4.1-06)
+Como  Responsável pela Proteção de Dados
+Quero  que nenhuma opção surja pré-selecionada em qualquer canal
+Para  garantir que o consentimento resulta de uma ação afirmativa do titular (opt-in)
+Requisitos: RF-MS-04, RF-MC-01   ·   Prioridade: Must
+Cenário: Happy path — formulário inicial
+Dado que um novo cliente acede ao formulário de criação de Conta CTT ou outro formulário de cliente não logado
+Quando o bloco de consentimentos for apresentado
+Então todas as caixas devem surgir desmarcadas
+E a opção “Aceito todos” deve surgir igualmente desmarcada
+Cenário: Edge case — regresso ao formulário
+Dado que o cliente preencheu parcialmente o formulário e navegou para outra página
+Quando regressar ao formulário
+Então nenhuma opção de consentimento pode surgir marcada por defeito
+Regras de negócio a respeitar
+A auditoria de interface contra dark patterns integra os critérios de aceitação da peça.
+Microfrontend de Consentimentos · US-07 — Conclusão do registo sem consentimentos   (US-S4.1-07)
+Como  Cliente dos CTT
+Quero  poder criar a minha Conta CTT ou preencher outro formulário onde a recolha de consentimentos é inserida sem autorizar comunicações de marketing
+Para  aceder ao serviço sem ter de trocar dados pessoais por ele
+Requisitos: RF-MS-04   ·   Prioridade: Must
+Cenário: Happy path — registo com zero consentimentos
+Dado que o cliente preencheu os dados obrigatórios e aceitou as Condições Gerais
+E não selecionou qualquer consentimento de marketing
+Quando submeter o formulário
+Então a conta deve ser criada com sucesso
+E não deve ser persistido qualquer registo de consentimento
+Regras de negócio a respeitar
+A validação do formulário é independente do bloco de consentimentos.
+Microfrontend de Consentimentos · US-08 — Acesso autenticado via Conta CTT   (US-S4.1-08)
+Como  Cliente dos CTT
+Quero  aceder às minhas preferências depois de iniciar sessão
+Para  gerir os meus consentimentos com a segurança da minha conta
+Requisitos: RF-MS-05   ·   Prioridade: Must
+Cenário: Happy path — sessão autenticada
+Dado que o cliente iniciou sessão na Conta CTT
+Quando aceder ao centro de auto-gestão
+Então o pedido ao CMP, através do API Gateway (MuleSoft), deve transportar a identidade autenticada do cliente
+E devem ser apresentados os consentimentos consolidados do seu perfil
+Regras de negócio a respeitar
+A identidade é validada no API Gateway (MuleSoft); a interface nunca decide autorizações por si.
+Microfrontend de Consentimentos · US-11 — Componente reutilizável multicanal   (US-S4.1-11)
+Como  Responsável de canal digital
+Quero  embutir o mesmo componente de consentimentos no meu canal
+Para  assegurar uma experiência consistente sem reimplementar a lógica
+Requisitos: RF-MS-07   ·   Prioridade: Must
+Cenário: Happy path — integração em canal web
+Dado que um canal web integra o microfrontend
+Quando o componente for carregado
+Então deve apresentar as mesmas categorias e comportamentos dos restantes canais
+E deve adaptar-se ao espaço disponível sem perda de funcionalidade
+Cenário: Edge case — canal aplicacional móvel
+Dado que uma aplicação móvel integra o componente
+Quando o cliente gerir consentimentos na app
+Então o comportamento de granularidade deve ser idêntico ao do canal web
+Regras de negócio a respeitar
+O componente é distribuído de forma a poder ser embutido em canais web e aplicacionais sem duplicação de lógica.
+Microfrontend de Consentimentos · US-12 — Conformidade com as diretrizes de acessibilidade   (US-S4.1-12)
+Como  Cliente dos CTT com necessidades de acessibilidade
+Quero  conseguir gerir os meus consentimentos com tecnologias de apoio
+Para  exercer os meus direitos em igualdade de circunstâncias
+Requisitos: RNF-08   ·   Prioridade: Must
+Cenário: Happy path — navegação por teclado e leitor de ecrã
+Dado que o cliente navega apenas com teclado e leitor de ecrã
+Quando percorrer o bloco de consentimentos
+Então todos os controlos devem ser alcançáveis e operáveis por teclado
+E o estado de cada interruptor, incluindo o estado indeterminado, deve ser anunciado corretamente
+Cenário: Edge case — contraste e dimensão de alvos
+Dado que a interface é avaliada segundo as diretrizes de acessibilidade
+Quando for executada a validação
+Então os rácios de contraste e as áreas de toque devem cumprir o nível AA
+Regras de negócio a respeitar
+A validação de acessibilidade integra os critérios de aceitação da peça.
+Microfrontend de Consentimentos · US-13 — Microfrontend com recolha do email no próprio componente   (US-S4.1-13)
+Como  Responsável de canal digital
+Quero  uma variante do microfrontend que recolha ela própria o email do titular
+Para  poder usá-lo em contextos onde não existe um formulário que forneça o email
+Requisitos: RF-MS-01, RF-MS-07, RF-MC-08   ·   Prioridade: Should
+Cenário: Happy path — recolha do email no componente
+Dado que o microfrontend está configurado no modo de recolha de email
+Quando o titular introduzir o seu email e as suas decisões de consentimento
+Então o componente deve submeter ao CMP o email e as decisões em conjunto
+E o comportamento de granularidade deve ser igual ao das restantes variantes
+Cenário: Edge case — email em falta ou inválido
+Dado que o titular tenta submeter sem email ou com um email inválido
+Quando submeter as decisões
+Então a submissão deve ser impedida até o email ser fornecido de forma válida
+Regras de negócio a respeitar
+A recolha do email é a única diferença face à variante padrão: toda a restante lógica de consentimento é comum.
+O modo de operação (recolha própria de email ou delegação ao formulário) é uma configuração do componente.
+O email recolhido segue as mesmas regras de identidade e pseudonimização das restantes chaves.
+6. Bloco 4 — APIs e Integração Orientada a Eventos
+As portas de entrada e saída da plataforma. Todo o ecossistema comunica com o CMP por aqui — nunca diretamente com a base de dados.
+6.1. S5.1 — API Gateway (MuleSoft) e segurança
+API Gateway corporativo (MuleSoft): ponto único de exposição das APIs, onde se autentica, se controla o tráfego e se aplicam as políticas de segurança.
+Equipa: Integrações + Segurança   ·   3 user stories
+API Gateway (MuleSoft) · US-01 — Autenticação e autorização centralizadas   (US-S5.1-01)
+Como  Responsável de Segurança
+Quero  que todos os pedidos sejam autenticados no Gateway antes de chegar ao CMP
+Para  impedir acessos não autorizados aos dados de consentimento
+Requisitos: RNF-02, RNF-05   ·   Prioridade: Must
+Cenário: Happy path — pedido autenticado
+Dado que um sistema consumidor apresenta credenciais válidas
+Quando invocar um serviço do CMP
+Então o Gateway deve validar as credenciais e encaminhar o pedido
+E deve propagar a identidade do chamador para efeitos de auditoria
+Cenário: Edge case — credenciais inválidas ou ausentes
+Dado que um pedido chega sem credenciais válidas
+Quando o Gateway o processar
+Então deve ser rejeitado sem atingir o motor de consentimento
+E a tentativa deve ficar registada
+Regras de negócio a respeitar
+Nenhum sistema acede ao CMP sem passar pelo API Gateway (MuleSoft), que é o ponto único de entrada.
+Toda a comunicação é cifrada em trânsito.
+API Gateway (MuleSoft) · US-03 — Registo de acessos para auditoria   (US-S5.1-03)
+Como  Responsável pela Proteção de Dados
+Quero  que cada acesso a dados de consentimento fique registado
+Para  poder demonstrar quem consultou dados de que titulares
+Requisitos: RF-CA-01, RNF-02   ·   Prioridade: Must
+Cenário: Happy path — registo do acesso
+Dado que um sistema consulta o estado de consentimento de um titular
+Quando o pedido for processado com sucesso
+Então deve ser registado o consumidor, o titular consultado e o timestamp no log de auditoria
+Regras de negócio a respeitar
+O registo de acesso guarda quem consultou, que titular e quando — nunca o conteúdo devolvido.
+6.2. S5.2 — APIs de ingestão e consulta
+Canal para registar novos consentimentos e para os sistemas verificarem se podem tratar os dados de um titular, incluindo a reconciliação de cargas em lote.
+Equipa: Dev Backend   ·   7 user stories
+APIs de Ingestão e Consulta · US-01 — Recolha de consentimentos (create por sub-opção)   (US-S5.2-01)
+Como  Canal de recolha do ecossistema CTT
+Quero  que uma recolha só preencha as sub-opções que o titular ainda não decidiu
+Para  poder incorporar o microfrontend numa jornada de recolha sem apagar decisões anteriores do mesmo e-mail
+Requisitos: RF-API-01, RF-MC-01   ·   Prioridade: Must
+Cenário: Happy path — sub-opção ainda não decidida
+Dado que o e-mail do titular não tem decisão registada para uma sub-opção
+Quando a recolha incluir essa sub-opção
+Então o consentimento correspondente deve ser criado
+Cenário: Edge case — sub-opção já decidida antes
+Dado que o e-mail do titular já deu consentimento a uma sub-opção numa recolha anterior
+Quando uma nova recolha não incluir essa sub-opção
+Então o consentimento anterior deve manter-se inalterado
+E a ausência dessa sub-opção na recolha não deve ser interpretada como revogação
+Cenário: Edge case — sub-opção já recusada antes
+Dado que o e-mail do titular já tinha deixado uma sub-opção por dar
+Quando uma nova recolha voltar a não a incluir
+Então nada deve ser alterado para essa sub-opção
+Cenário: Edge case — recolha nunca apaga
+Dado que o titular tem sub-opções ativas e inativas
+Quando submeter uma recolha
+Então nenhuma sub-opção já decidida deve ser apagada ou revogada pela recolha
+Regras de negócio a respeitar
+Na jornada de recolha, cada sub-opção é create-if-absent: só se cria se o e-mail ainda não tiver decisão para essa sub-opção; se já tiver (deu ou não deu), a recolha não a altera.
+A recolha nunca revoga: a omissão de uma sub-opção numa recolha não é revogação.
+A gestão que acrescenta e retira decisões é a jornada da área de cliente (US-S5.2-06), operação distinta desta.
+A avaliação de “já decidiu” é por sub-opção e assenta no e-mail do titular como identificador do consentimento.
+APIs de Ingestão e Consulta · US-02 — Consulta do estado consolidado   (US-S5.2-02)
+Como  Sistema consumidor do ecossistema CTT
+Quero  consultar o estado atual dos consentimentos de um titular
+Para  decidir se posso incluí-lo numa campanha ou tratamento
+Requisitos: RF-API-02   ·   Prioridade: Must
+Cenário: Happy path — estado por categoria e sub-opção
+Dado que o titular tem consentimentos em várias categorias
+Quando o sistema consultar o seu estado
+Então deve ser devolvido o estado consolidado por categoria e sub-opção
+E cada entrada deve indicar o estado e o timestamp da última decisão
+Cenário: Edge case — titular desconhecido
+Dado que o identificador consultado não existe no CMP
+Quando o sistema efetuar a consulta
+Então deve ser devolvida a indicação de titular não encontrado
+E a resposta não deve ser interpretável como autorização de tratamento
+Regras de negócio a respeitar
+A ausência de consentimento nunca equivale a autorização de tratamento.
+APIs de Ingestão e Consulta · US-03 — Consistência forte após revogação   (US-S5.2-03)
+Como  Responsável pela Proteção de Dados
+Quero  que um consentimento revogado deixe de ser devolvido como ativo de imediato
+Para  que nenhum sistema continue a tratar dados com base em informação desatualizada
+Requisitos: RF-API-02, RF-MC-02   ·   Prioridade: Must
+Cenário: Happy path — leitura imediata do novo estado
+Dado que o titular revoga um consentimento
+Quando um sistema consultar o estado no instante seguinte à gravação
+Então a finalidade revogada não deve constar como ativa
+Cenário: Edge case — expurgo posterior
+Dado que o consentimento foi revogado mas os dados ainda não foram expurgados
+Quando a consulta for efetuada
+Então o consentimento deve ser devolvido como revogado, independentemente do ciclo de expurgo
+Regras de negócio a respeitar
+A consulta é servida com consistência forte relativamente à gravação.
+APIs de Ingestão e Consulta · US-04 — Reconciliação de cargas em lote   (US-S5.2-04)
+Como  Responsável de canais legados
+Quero  submeter ao CMP consentimentos recolhidos em papel dias depois
+Para  que a fonte única de verdade reflita também as recolhas presenciais
+Requisitos: RF-API-08   ·   Prioridade: Should
+Cenário: Happy path — lote com timestamp de recolha
+Dado que um lote contém consentimentos recolhidos em formulário físico
+E cada registo indica o timestamp original da recolha
+Quando o lote for submetido ao CMP
+Então cada registo deve ser avaliado pelo seu timestamp de recolha, não pelo momento da submissão
+Cenário: Edge case — decisão do titular posterior à do lote
+Dado que o titular alterou a sua decisão no microsite depois da data do formulário físico
+Quando o lote for processado
+Então a decisão do microsite deve prevalecer por ser mais recente
+E o registo do formulário físico deve ficar no histórico sem alterar o estado vigente
+Cenário: Edge case — lote sem timestamp de recolha
+Dado que um registo do lote não indica o timestamp de recolha
+Quando for processado
+Então deve ser rejeitado para tratamento manual
+E não deve ser assumido o momento da submissão como data de recolha
+Regras de negócio a respeitar
+A regra Most Recent Wins compara sempre timestamps de recolha.
+APIs de Ingestão e Consulta · US-06 — Gestão de preferências (update com acrescentar e retirar)   (US-S5.2-06)
+Como  Cliente dos CTT
+Quero  acrescentar ou retirar consentimentos a partir das jornadas de gestão
+Para  controlar as minhas decisões depois da recolha inicial
+Requisitos: RF-API-01, RF-MC-02   ·   Prioridade: Must
+Cenário: Happy path — acrescentar consentimento
+Dado que o titular acede à gestão de preferências na área de cliente ou na app
+Quando ativar uma sub-opção que não tinha
+Então o consentimento correspondente deve ser criado
+Cenário: Happy path — retirar consentimento
+Dado que o titular tem uma sub-opção ativa
+Quando a desativar na gestão de preferências
+Então esse consentimento deve ser revogado
+Cenário: Edge case — retirada é sempre explícita
+Dado que o titular altera apenas uma sub-opção na gestão de preferências
+Quando submeter a alteração
+Então apenas a sub-opção alterada deve mudar de estado
+E as restantes devem permanecer como estavam
+Regras de negócio a respeitar
+A gestão de preferências é a única operação que pode revogar um consentimento por decisão do titular.
+Cada alteração afeta apenas as sub-opções explicitamente mudadas pelo titular.
+É uma operação distinta da recolha inicial (US-S5.2-01), com semântica própria.
+APIs de Ingestão e Consulta · US-07 — Indicadores agregados de consentimento   (US-S5.2-07)
+Como  equipa de marketing analítico
+Quero  receber periodicamente um ficheiro com os indicadores agregados de consentimento
+Para  alimentar os reportes de gestão sem consultar o CMP a cada utilização
+Requisitos: a criar na v0.5 (informação de gestão)   ·   Prioridade: Should
+Cenário: Happy path — extração periódica
+Dado que está configurada uma periodicidade de extração para o tenant "CTT"
+Quando o processo de extração for executado
+Então deve ser produzido um ficheiro com os agregados por categoria, sub-opção e canal
+E o ficheiro deve identificar o período abrangido e o momento a que os valores respeitam
+Cenário: Happy path — extração a pedido
+Dado que um sistema autorizado pede uma extração para um período
+Quando o pedido for aceite
+Então a extração deve ser produzida e disponibilizada a esse sistema
+Cenário: Edge case — agregados abaixo do limiar mínimo
+Dado que alguns agregados abrangem menos titulares do que o limiar mínimo
+Quando a extração for produzida
+Então esses valores devem sair suprimidos, com indicação do motivo
+Cenário: Edge case — pedido de detalhe individual
+Dado que é pedida uma extração ao nível do titular
+Quando o pedido for submetido
+Então deve ser recusado
+E a tentativa deve ficar registada no log de acessos (US-S5.1-03)
+Regras de negócio a respeitar
+A extração nunca contém dados ao nível do titular.
+Os indicadores não são apresentados no Frontend do CMP: o acesso faz-se por API ou por extração.
+Cada extração fica registada no log de auditoria, com o sistema requerente, os filtros e o momento.
+A extração respeita o tenant do sistema a que se destina.
+6.3. S5.3 — Eventos e tópico Kafka
+Publicação em tempo real de cada alteração de consentimento, para que a revogação chegue de imediato a quem trata os dados.
+Equipa: Arquitetura + Integrações   ·   5 user stories
+Eventos e Integração Kafka · US-01 — Publicação de eventos de alteração   (US-S5.3-01)
+Como  Sistema consumidor do ecossistema CTT
+Quero  receber um evento sempre que um consentimento muda
+Para  manter o meu repositório local sincronizado sem consultar o CMP continuamente
+Requisitos: RF-API-03   ·   Prioridade: Must
+Cenário: Happy path — publicação da alteração
+Dado que ocorre uma alteração de consentimento no CMP
+Quando a transação for confirmada
+Então a alteração deve ser notificada aos sistemas consumidores
+E o evento deve conter a finalidade, a tipologia e o âmbito da alteração
+Regras de negócio a respeitar
+O evento é publicado depois de a decisão ficar registada, nunca antes.
+Eventos e Integração Kafka · US-02 — Ordenação por titular   (US-S5.3-02)
+Como  Sistema consumidor do ecossistema CTT
+Quero  receber os eventos de um titular pela ordem em que ocorreram
+Para  não aplicar uma decisão antiga por cima de uma mais recente
+Requisitos: RF-API-03   ·   Prioridade: Must
+Cenário: Happy path — ordenação garantida
+Dado que um titular altera duas vezes o mesmo consentimento em curto intervalo
+Quando os eventos forem publicados
+Então devem ser encaminhados de forma a preservar a ordem entre si
+E o consumidor deve recebê-los pela ordem de ocorrência
+Regras de negócio a respeitar
+Os eventos de um mesmo titular são processados sempre pela ordem em que ocorreram.
+Eventos e Integração Kafka · US-03 — Revogação de consentimento de comunicação   (US-S5.3-03)
+Como  Responsável de Marketing
+Quero  que os sistemas de campanha suprimam de imediato quem revogou
+Para  não enviar comunicações a quem já as recusou
+Requisitos: RF-API-04   ·   Prioridade: Must
+Cenário: Happy path — supressão nas campanhas
+Dado que o titular revoga um consentimento de comunicação
+Quando for publicado o evento de revogação de um consentimento de comunicação
+Então os sistemas de campanha devem suprimir o titular dos tratamentos em curso
+E o evento deve transportar os identificadores de forma pseudonimizada, permitindo a correspondência sem expor dados pessoais
+Regras de negócio a respeitar
+O formato do evento é alinhado com os modelos de privacidade já usados pelos sistemas de destino.
+Eventos e Integração Kafka · US-04 — Revogação de consentimento de partilha   (US-S5.3-04)
+Como  Responsável pela Proteção de Dados
+Quero  que os destinatários dos dados sejam notificados quando a partilha é revogada
+Para  cumprir o dever de comunicação a terceiros previsto no artigo 19.º do RGPD
+Requisitos: RF-API-05   ·   Prioridade: Must
+Cenário: Happy path — notificação dos destinatários
+Dado que o titular revoga um consentimento de partilha
+Quando for publicado o evento de revogação de um consentimento de partilha de dados
+Então o evento deve identificar os destinatários abrangidos
+E deve ser desencadeado o mecanismo de propagação a entidades externas
+Cenário: Edge case — parceiro sem canal automatizado
+Dado que um destinatário não dispõe de canal automatizado de supressão
+Quando a revogação ocorrer
+Então o titular deve ser incluído na lista de supressão a distribuir a esse destinatário
+E a data-limite contratual de cessação deve ficar registada
+Regras de negócio a respeitar
+O mecanismo concreto de propagação depende da decisão de negócio em aberto (Q3).
+6.4. S5.4 — Conector MuleSoft para Data Cloud
+Troço que transporta os eventos de consentimento até ao Data Cloud e ao Marketing Cloud (adicionar o Salesforce Sales), seguindo o padrão corporativo Kafka → MuleSoft (API Gateway e integração) → Salesforce.
+Equipa: Integrações + Salesforce   ·   4 user stories
+Conector MuleSoft · US-01 — Consumo do tópico de consentimentos   (US-S5.4-01)
+Como  Equipa de Integrações
+Quero  que o MuleSoft consuma os eventos publicados pelo CMP
+Para  alimentar os sistemas de dados e de campanha a partir de uma fonte só
+Requisitos: RF-API-06   ·   Prioridade: Must
+Cenário: Happy path — consumo e transformação
+Dado que o CMP notificou uma alteração de consentimento
+Quando o MuleSoft o consumir
+Então deve transformá-lo conforme o contrato do sistema de destino
+E deve entregá-lo ao pipeline do Data Cloud
+Cenário: Edge case — falha na entrega ao destino
+Dado que o sistema de destino está indisponível
+Quando a entrega falhar
+Então o evento deve ser retentado sem perda
+E após esgotadas as retentativas deve ser encaminhado para tratamento de erro
+Regras de negócio a respeitar
+A camada de integração corporativa é o único intermediário entre o barramento de eventos e os sistemas de destino.
+Conector MuleSoft · US-03 — Alimentação do Marketing Cloud   (US-S5.4-03)
+Como  Responsável de Marketing
+Quero  que as campanhas só incluam clientes com consentimento ativo
+Para  assegurar a conformidade das comunicações e a base da monetização de audiências
+Requisitos: RF-API-06   ·   Prioridade: Must
+Cenário: Happy path — segmentação com consentimento ativo
+Dado que os eventos de consentimento chegaram ao Marketing Cloud
+Quando for construída uma audiência de campanha
+Então apenas devem ser incluídos titulares com consentimento ativo para a finalidade da campanha
+Cenário: Edge case — revogação durante a preparação da campanha
+Dado que um titular revoga o consentimento depois de a audiência ser construída
+Quando o evento de revogação for processado
+Então o titular deve ser removido da audiência antes do envio
+Regras de negócio a respeitar
+A conformidade da audiência é verificada no momento mais próximo possível do envio.
+Conector MuleSoft · US-04 — Rastreabilidade da propagação   (US-S5.4-04)
+Como  Responsável de Operações
+Quero  acompanhar o percurso de um evento desde o CMP até ao sistema de destino
+Para  poder diagnosticar rapidamente falhas de sincronização
+Requisitos: RF-API-06, RNF-03   ·   Prioridade: Should
+Cenário: Happy path — correlação ponta a ponta
+Dado que um evento é publicado pelo CMP
+Quando percorrer o barramento de eventos, a camada de integração e o sistema de destino
+Então deve ser possível correlacionar todas as etapas pelo identificador do evento
+Regras de negócio a respeitar
+Um identificador de correlação acompanha o evento em todas as etapas da integração.
+7. Bloco 5 — Gestão de Conteúdos / dotCMS
+O dotCMS é a plataforma de gestão de conteúdos já existente nos CTT. Passa a ser onde se criam, editam e versionam os textos de consentimento e os restantes conteúdos legais, e expõe uma API que o CMP consome para obter, em cada momento, o conteúdo aplicável. O CMP não gere conteúdos: consulta o dotCMS.
+7.1. S6.1 — Gestão e exposição de conteúdos (dotCMS)
+Gestão editorial dos textos de consentimento e dos conteúdos legais associados, com versionamento e suporte multi-tenant, e uma API de leitura que o CMP e os canais consomem.
+Equipa: Equipa dotCMS + Conteúdos   ·   5 user stories
+Gestão de Conteúdos (dotCMS) · US-01 — Gestão editorial dos textos de consentimento   (US-S6.1-01)
+Como  Gestor de conteúdos interno
+Quero  criar e editar os textos de consentimento no dotCMS
+Para  manter o conteúdo apresentado ao titular sem depender de desenvolvimento
+Requisitos: RF-BO-01   ·   Prioridade: Must
+Cenário: Happy path — criação e edição de um texto
+Dado que o gestor de conteúdos acede ao dotCMS
+Quando criar ou alterar o texto de uma categoria de consentimento
+Então o conteúdo deve ficar disponível para publicação no dotCMS
+E o CMP deve passar a poder consultá-lo através da API de conteúdos
+Cenário: Edge case — conteúdo obrigatório em falta
+Dado que um texto está a ser preparado sem um elemento legal obrigatório
+Quando o gestor tentar publicá-lo
+Então a publicação deve ser impedida até o elemento em falta ser fornecido
+Regras de negócio a respeitar
+A criação e a edição dos textos residem no dotCMS, não no CMP.
+O CMP não altera conteúdos; apenas os consulta.
+Gestão de Conteúdos (dotCMS) · US-02 — Versionamento dos textos no dotCMS   (US-S6.1-02)
+Como  Responsável pela Proteção de Dados
+Quero  que cada alteração a um texto gere uma nova versão identificável
+Para  poder provar qual o conteúdo em vigor no momento de cada consentimento
+Requisitos: RF-BO-01, RF-MC-06   ·   Prioridade: Must
+Cenário: Happy path — nova versão publicada
+Dado que existe uma versão publicada de um texto
+Quando o gestor publicar uma alteração
+Então deve ser criada uma nova versão identificável
+E a versão anterior deve permanecer consultável para efeitos de prova
+Cenário: Edge case — consentimentos antigos não mudam de versão
+Dado que existem consentimentos dados sobre uma versão anterior
+Quando uma nova versão for publicada
+Então os consentimentos existentes devem continuar a referenciar a versão sobre a qual foram dados
+Regras de negócio a respeitar
+O versionamento é assegurado pelo dotCMS.
+A API de conteúdos permite obter tanto a versão em vigor como uma versão específica anterior.
+Gestão de Conteúdos (dotCMS) · US-03 — Conteúdos por tenant   (US-S6.1-03)
+Como  Gestor de conteúdos interno
+Quero  manter no dotCMS conteúdos distintos por tenant
+Para  servir marcas ou contextos diferentes com o texto adequado a cada um
+Requisitos: RF-BO-01   ·   Prioridade: Must
+Cenário: Happy path — conteúdo do tenant correto
+Dado que existe conteúdo para tenants diferentes
+Quando a API for consultada indicando um tenant
+Então deve ser devolvido o conteúdo correspondente a esse tenant
+Cenário: Edge case — categoria sem conteúdo para o tenant
+Dado que uma categoria não tem texto definido para um dado tenant
+Quando esse tenant consultar a API
+Então deve ser indicada a ausência de conteúdo para essa categoria e tenant
+E a categoria não deve ser apresentada para recolha nesse tenant
+Regras de negócio a respeitar
+O tenant é um critério de resolução do conteúdo: a mesma categoria pode ter textos distintos por tenant.
+Gestão de Conteúdos (dotCMS) · US-04 — API de conteúdos consumida pelo CMP   (US-S6.1-04)
+Como  Motor de Gestão de Consentimentos
+Quero  obter do dotCMS, por API, o conteúdo aplicável a cada categoria e tenant
+Para  apresentar ao titular o texto correto e associá-lo ao consentimento
+Requisitos: RF-BO-01, RF-MC-06   ·   Prioridade: Must
+Cenário: Happy path — obter o conteúdo em vigor
+Dado que existe conteúdo publicado para uma categoria e tenant
+Quando o CMP pedir o conteúdo aplicável
+Então a API deve devolver o texto em vigor, a sua versão e os conteúdos legais associados
+E o consentimento recolhido deve registar a versão devolvida
+Cenário: Edge case — indisponibilidade do dotCMS
+Dado que o dotCMS está temporariamente indisponível
+Quando o CMP pedir o conteúdo aplicável
+Então deve ser usada a última versão válida conhecida
+E não deve ser apresentado ao titular um consentimento sem o respetivo texto
+Regras de negócio a respeitar
+A API de conteúdos é de leitura para o CMP: expõe o conteúdo aplicável, não permite alterá-lo.
+A resposta identifica sempre a versão, para garantir a rastreabilidade do consentimento.
+8. Contratos de interface
+ANEXO INDICATIVO — proposta de partida, a validar e fechar pelas equipas técnicas.
+Estes contratos são a condição de arranque do trabalho em paralelo: uma vez acordados, as equipas de frontend, integração e Salesforce podem construir contra eles sem esperar pelos sistemas de origem. O desenho concreto — nomes de campos, códigos de erro, versionamento — pertence às equipas; o que este anexo fixa é a informação que tem de circular para que as regras de negócio das secções anteriores possam ser cumpridas.
+A. APIs de recolha (create) e de gestão (update)
+Duas operações distintas, com semânticas próprias:
+POST /v1/consent  (recolha inicial / create) — cria consentimentos apenas se o titular ainda não tiver qualquer consentimento; nunca sobrepõe nem revoga decisões existentes. A omissão de uma sub-opção não é revogação.
+PUT /v1/consent  (gestão / update) — usado nas jornadas de gestão (área de cliente, app); acrescenta ou retira consentimentos, alterando apenas as sub-opções explicitamente mudadas pelo titular.
+// POST /v1/consent  — recolha inicial (create-if-absent, global)
+// Se o titular já tiver QUALQUER consentimento, o pedido não altera nada.
+{
+  "mode": "CREATE",
+  "identifier": { "type": "EMAIL", "value": "cliente@exemplo.pt" },
+  "tenant": "CTT",
+  "metadata": { "channel": "CONTA_CTT_WEB", "collectedAt": "2026-08-01T10:00:00Z" },
+  "consents": [
+    { "purposeCode": "MKT_CTT_GRUPO", "subOption": "PRODUTOS_SERVICOS_CTT", "status": "GRANTED",
+      "legalTextRef": "dotcms://consent/MKT_CTT_GRUPO?tenant=CTT&version=v1.0.0" }
+  ]
+}
+// PUT /v1/consent  — gestão de preferências (acrescenta/retira, por sub-opção)
+{
+  "mode": "UPDATE",
+  "identifier": { "type": "EMAIL", "value": "cliente@exemplo.pt" },
+  "tenant": "CTT",
+  "changes": [
+    { "purposeCode": "MKT_CTT_GRUPO", "subOption": "PRODUTOS_SERVICOS_CTT", "status": "REVOKED" }
+  ]
+}
+Notas
+O CREATE é create-if-absent a nível global: basta existir um consentimento do titular para o pedido não tocar em nada.
+legalTextRef aponta para o dotCMS e inclui o tenant, porque o texto em vigor pode variar por tenant.
+Só o UPDATE (jornadas de gestão) pode revogar consentimentos por decisão do titular.
+POST /v1/consent — utilizada por todos os canais de recolha (US-S5.2-01)
+Request
+{
+  "idempotencyKey": "req-2026-07-27-0001",
+  "identifier": {
+    "type": "EMAIL",
+    "value": "cliente.exemplo@ctt.pt"
+  },
+  "metadata": {
+    "channel": "CONTA_CTT_WEB",
+    "collectedAt": "2026-07-27T15:20:00Z",
+    "ipAddress": "195.22.4.91",
+    "evidenceRef": null
+  },
+  "consents": [
+    {
+      "purposeCode": "MKT_CTT_GRUPO",
+      "subOption": "PRODUTOS_SERVICOS_CTT",
+      "status": "GRANTED",
+      "legalTextId": "b7c1e2a4-1111-4a2b-9c3d-5e6f7a8b9c0d",
+      "legalTextVersion": "v1.0.0"
+    },
+    {
+      "purposeCode": "SHARE_PARC_CTT",
+      "subOption": "TELECOMUNICACOES",
+      "status": "GRANTED",
+      "legalTextId": "c8d2f3b5-2222-4b3c-8d4e-6f7a8b9c0d1e",
+      "legalTextVersion": "v1.1.0"
+    }
+  ]
+}
+Response 201
+{
+  "globalId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "transactionId": "tx-2026-990812-abc",
+  "status": "PROCESSED",
+  "processedAt": "2026-07-27T15:20:02Z",
+  "recordsCreated": 2,
+  "digitalSignature": "MEYCIQCc18FdaeA8901aaEE8bcda0012bcda9911eeffbbffaa"
+}
+Response 422 — erro de validação
+{
+  "transactionId": null,
+  "status": "REJECTED",
+  "errors": [
+    {
+      "code": "LEGAL_TEXT_VERSION_MISSING",
+      "field": "consents[0].legalTextVersion",
+      "message": "A versao do texto legal e obrigatoria."
+    }
+  ]
+}
+Notas
+collectedAt é o momento da recolha junto do titular, não o da submissão — é este que alimenta a regra Most Recent Wins.
+evidenceRef é obrigatório quando channel = FORM_FISICO.
+Não existe qualquer campo que represente a checkbox-pai: apenas decisões ao nível folha.
+B. API de consulta de estado
+GET /v1/consent/{identifier}?type=EMAIL — utilizada pelos sistemas consumidores (US-S5.2-02)
+Response 200
+{
+  "globalId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "lastUpdated": "2026-07-27T15:20:02Z",
+  "consents": [
+    {
+      "purposeCode": "MKT_CTT_GRUPO",
+      "purposeType": "COMMUNICATION",
+      "controllerType": "AUTONOMOUS",
+      "subOption": "PRODUTOS_SERVICOS_CTT",
+      "status": "GRANTED",
+      "decidedAt": "2026-07-27T15:20:00Z",
+      "legalTextVersion": "v1.0.0"
+    },
+    {
+      "purposeCode": "SHARE_PARC_CTT",
+      "purposeType": "DATA_SHARING",
+      "controllerType": "JOINT",
+      "subOption": "TELECOMUNICACOES",
+      "status": "REVOKED",
+      "decidedAt": "2026-07-27T18:04:11Z",
+      "legalTextVersion": "v1.1.0"
+    }
+  ]
+}
+Response 404 — titular desconhecido
+{
+  "status": "NOT_FOUND",
+  "message": "Nao existe perfil associado ao identificador indicado.",
+  "treatmentAuthorised": false
+}
+Notas
+A resposta inclui sempre treatmentAuthorised = false quando não há perfil: ausência nunca equivale a autorização.
+O estado REVOKED é visível na leitura no mesmo instante da gravação (consistência forte).
+C. Evento de revogação de consentimento
+Tópico ctt.cmp.privacy.consent-events.v1 — chave de partição = globalId (US-S5.3-03, US-S5.3-04)
+Revogação de comunicação
+{
+  "eventId": "e9b21a8d-12fa-48dc-bca1-9988ffeedda1",
+  "eventType": "ConsentRevokedEvent",
+  "dateTime": "2026-07-27T18:04:11Z",
+  "globalId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "consent": {
+    "purposeCode": "MKT_CTT_GRUPO",
+    "purposeType": "COMMUNICATION",
+    "subOption": "PRODUTOS_SERVICOS_CTT",
+    "status": "REVOKED",
+    "controllerType": "AUTONOMOUS"
+  },
+  "recipients": [],
+  "linkedIdentifiers": [
+    { "type": "EMAIL", "hashedValue": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" }
+  ],
+  "provider": "CMP_MONEYBALL"
+}
+Revogação de partilha com terceiros
+{
+  "eventId": "f1c30b9e-23ab-49ed-cbd2-1122aaffbbcc",
+  "eventType": "ConsentRevokedEvent",
+  "dateTime": "2026-07-27T18:06:45Z",
+  "globalId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "consent": {
+    "purposeCode": "SHARE_PARC_CTT",
+    "purposeType": "DATA_SHARING",
+    "subOption": "TELECOMUNICACOES",
+    "status": "REVOKED",
+    "controllerType": "JOINT"
+  },
+  "recipients": [
+    { "partnerId": "PARC-0042", "name": "Parceiro Telecom", "suppressionDeadline": "2026-07-30T00:00:00Z" }
+  ],
+  "linkedIdentifiers": [
+    { "type": "EMAIL", "hashedValue": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" }
+  ],
+  "provider": "CMP_MONEYBALL"
+}
+Notas
+purposeType determina o comportamento a jusante: COMMUNICATION suprime nas campanhas; DATA_SHARING obriga a notificar os destinatários (art. 19.º RGPD).
+recipients só vem preenchido em eventos de partilha e suporta o mecanismo de propagação a externos (ponto em aberto Q3).
+Os identificadores viajam sempre em hash; nunca em claro.
+D. Verificação prévia de notificações
+Tópico crm.customer-service.notifications.v1 — consumido pelo serviço de validação
+Pedido consumido
+{
+  "notificationId": "ntf-2026-556677",
+  "globalId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "notificationType": "PROMOTIONAL",
+  "channel": "SMS",
+  "purposeCode": "MKT_CTT_GRUPO",
+  "requestedBy": "MARKETING_CLOUD"
+}
+Resultado da verificação
+{
+  "notificationId": "ntf-2026-556677",
+  "decision": "BLOCKED",
+  "reason": "CONSENT_REVOKED",
+  "checkedAt": "2026-07-27T18:07:02Z",
+  "consentStateAtCheck": {
+    "purposeCode": "MKT_CTT_GRUPO",
+    "status": "REVOKED",
+    "decidedAt": "2026-07-27T18:04:11Z"
+  }
+}
+Notas
+A decisão baseia-se no estado no momento da verificação, não no momento em que o pedido foi criado.
+Notificações transacionais e legais (notificationType diferente de PROMOTIONAL) não são bloqueadas.
+E. API de indicadores agregados
+GET /v1/insights/consent — utilizada pelos sistemas de informação de gestão (US-S5.2-06)
+Pedido
+GET /v1/insights/consent?tenant=CTT&purpose=UC-03&from=2026-01-01&to=2026-06-30&groupBy=SUBPURPOSE
+Authorization: Bearer <token emitido pelo Gateway>
+Resposta 200
+{
+  "tenant": "CTT",
+  "generatedAt": "2026-08-07T09:00:00Z",
+  "period": { "from": "2026-01-01", "to": "2026-06-30" },
+  "minimumAggregationThreshold": 0,
+  "groupBy": "SUBPURPOSE",
+  "results": [
+    {
+      "purposeCode": "UC-03",
+      "subPurposeCode": "UC-03-01",
+      "purposeType": "COMMUNICATION",
+      "active": 128430,
+      "revoked": 9821,
+      "suppressed": false
+    },
+    {
+      "purposeCode": "UC-03",
+      "subPurposeCode": "UC-03-04",
+      "purposeType": "DATA_SHARING",
+      "active": null,
+      "revoked": null,
+      "suppressed": true,
+      "suppressionReason": "BELOW_MINIMUM_AGGREGATION"
+    }
+  ]
+}
+Notas
+A resposta nunca contém identificadores de titulares; não existe parâmetro que permita descer ao nível individual.
+O campo minimumAggregationThreshold devolve o limiar em vigor, a fixar pelo DPO; enquanto não estiver decidido, o contrato não está fechado.
+Os agregados são sempre devolvidos no âmbito do tenant do consumidor autenticado.
+O momento a que os valores respeitam é devolvido em generatedAt, para que o consumidor não apresente números sem data de referência.
+F. Evento de alteração de e-mail do titular
+Tópico account.subject.email-changed.v1 — publicado pela plataforma de conta do titular e consumido pelo CMP (US-S1.3-06)
+Evento consumido
+{
+  "eventId": "3f8a1c22-77bd-4e91-9a04-5c1e77d2b0aa",
+  "eventType": "SubjectEmailChangedEvent",
+  "occurredAt": "2026-08-08T09:14:00Z",
+  "tenant": "CTT",
+  "source": "CONTA_CTT",
+  "previousIdentifier": {
+    "type": "EMAIL",
+    "value": "antigo@exemplo.pt"
+  },
+  "newIdentifier": {
+    "type": "EMAIL",
+    "value": "novo@exemplo.pt"
+  },
+  "ownershipVerifiedAt": "2026-08-08T09:12:45Z"
+}
+Resultado da aplicação
+{
+  "globalId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "status": "APPLIED",
+  "appliedAt": "2026-08-08T09:14:02Z",
+  "consentRecordsPreserved": 14,
+  "mergeTriggered": false
+}
+Notas
+O campo ownershipVerifiedAt é obrigatório: sem confirmação de titularidade na origem, a alteração não é aplicada (US-S1.3-06).
+A alteração de e-mail não cria, revoga nem expira consentimentos; consentRecordsPreserved devolve o número de decisões que transitaram intactas.
+Quando o novo e-mail já está associado a outro perfil, mergeTriggered vem a verdadeiro e o motor desencadeia a fusão de perfis (US-S1.3-04).
+O evento nunca atravessa tenants: a alteração aplica-se apenas ao perfil do tenant que a comunicou.
+G. API de conteúdos (dotCMS)
+GET /content/consent?category={cat}&tenant={tenant} — consumida pelo CMP (US-S6.1-04)
+Resposta
+{
+  "category": "MKT_CTT_GRUPO",
+  "tenant": "CTT",
+  "version": "v1.1.0",
+  "status": "PUBLISHED",
+  "consentText": "Autorizo os CTT a tratarem os meus dados de contacto para...",
+  "subOptions": [
+    { "code": "PRODUTOS_SERVICOS_CTT", "label": "Produtos e servicos dos CTT" },
+    { "code": "PRODUTOS_SERVICOS_GRUPO", "label": "Produtos e servicos do Grupo CTT" }
+  ],
+  "legalContent": {
+    "privacyPolicyUrl": "https://.../politica-de-privacidade?tenant=CTT",
+    "groupCompanies": ["CTT", "CTT Expresso", "Banco CTT", "Payshop"],
+    "partners": ["Parceiro A", "Parceiro B"]
+  }
+}
+Notas
+A API é de leitura para o CMP; a gestão de conteúdos faz-se no dotCMS.
+version identifica a versão a associar ao consentimento recolhido.
+tenant resolve o conteúdo correto; a mesma categoria pode ter texto e listas distintos por tenant.
+legalContent transporta os conteúdos legais associados (política de privacidade, empresas do Grupo, parceiros).
+9. Modelo de dados de suporte
+ANEXO INDICATIVO — proposta de partida, a validar e fechar pelas equipas técnicas.
+Estrutura de apoio à leitura das histórias do Bloco 1. A modelação efetiva — normalização, nomes, tipos, índices e estratégia de particionamento — é decisão da equipa. O que releva para o negócio é que a informação abaixo exista, seja rastreável e cumpra as regras enunciadas nas histórias.
+dim_global_profiles
+Identidade unificada do titular na plataforma.
+Campo
+Tipo
+Descrição
+global_id
+UUID, PK
+Identificador interno único do titular.
+status
+VARCHAR(20)
+ACTIVE, MERGED ou DELETED.
+merged_into
+UUID, FK
+Perfil ativo para onde este foi fundido, quando aplicável.
+created_at / updated_at
+TIMESTAMP
+Criação e última alteração do perfil.
+dim_identifiers
+Chaves pseudonimizadas que ligam canais ao perfil do titular.
+Campo
+Tipo
+Descrição
+identifier_hash
+VARCHAR(64), PK
+Hash SHA-256 do identificador, com salt.
+global_id
+UUID, FK
+Perfil associado.
+type
+VARCHAR(30)
+EMAIL (identificador principal do registo de consentimento), MOBILE, WIFI_MAC, DEVICE_ID, COOKIE_ID.
+created_at
+TIMESTAMP
+Momento do mapeamento.
+dim_legal_texts
+Versionamento e arquivo dos textos apresentados ao titular.
+Campo
+Tipo
+Descrição
+legal_text_id
+UUID, PK
+Identificador da versão do texto.
+purpose_code
+VARCHAR(50)
+Finalidade associada (UC-01 a UC-05).
+purpose_type
+VARCHAR(20)
+COMMUNICATION ou DATA_SHARING.
+controller_type
+VARCHAR(20)
+AUTONOMOUS ou JOINT.
+joint_controllers
+JSONB
+Entidades corresponsáveis, obrigatório quando JOINT.
+version
+VARCHAR(15)
+Versão semântica (ex.: v1.1.0).
+state
+VARCHAR(20)
+Gerido no dotCMS.
+text_content
+TEXT
+Conteúdo integral apresentado ao titular.
+requires_age_verification
+BOOLEAN
+Indica se a finalidade exige verificação de idade.
+tenant
+VARCHAR(30)
+Tenant a que o texto se aplica; a mesma categoria pode ter conteúdos distintos por tenant no dotCMS.
+fact_consent_records
+Registo transacional imutável das decisões do titular.
+Campo
+Tipo
+Descrição
+record_id
+UUID, PK
+Identificador da transação de consentimento.
+global_id
+UUID, FK
+Titular a que respeita.
+legal_text_id
+UUID, FK
+Versão exata do texto aceite.
+purpose_code
+VARCHAR(50)
+Finalidade (UC-01 a UC-05).
+sub_option
+VARCHAR(50)
+Sub-opção ao nível folha (área de negócio ou categoria de parceiro).
+purpose_type
+VARCHAR(20)
+COMMUNICATION ou DATA_SHARING.
+partner_id
+VARCHAR(50), NULL
+Parceiro concreto, quando aplicável.
+status
+VARCHAR(20)
+GRANTED ou REVOKED.
+channel
+VARCHAR(50)
+Canal de recolha (CONTA_CTT_WEB, APP, FORM_FISICO, GO_WIFI...).
+collected_at
+TIMESTAMP
+Momento da decisão do titular — base da regra Most Recent Wins.
+evidence_ref
+VARCHAR(200), NULL
+Referência à digitalização, obrigatória em FORM_FISICO.
+digital_signature
+VARCHAR(128)
+Assinatura que garante o não-repúdio do registo.
+tenant
+VARCHAR(30)
+Marca/contexto em que o consentimento foi recolhido; resolve o texto correto no dotCMS.
+audit_log
+Diário imutável de operações, com encadeamento criptográfico.
+Campo
+Tipo
+Descrição
+audit_id
+UUID, PK
+Identificador do registo de auditoria.
+event_payload
+JSONB
+Conteúdo da operação registada.
+actor
+VARCHAR(100)
+Utilizador ou conta de serviço responsável.
+occurred_at
+TIMESTAMP
+Momento da operação.
+previous_hash
+VARCHAR(64)
+Hash do registo imediatamente anterior.
+audit_hash
+VARCHAR(64)
+SHA-256 do payload concatenado com previous_hash.
+Regras estruturais
+Imutabilidade — fact_consent_records é append-only: cada alteração cria um novo registo e nunca reescreve o anterior.
+Estado vigente — o estado vigente de uma finalidade resulta do registo com collected_at mais recente, não do mais recentemente inserido.
+Pseudonimização — identificadores pessoais existem apenas em dim_identifiers e apenas sob a forma de hash com salt.
+Expurgo — o expurgo por DSAR abrange fact_consent_records e todas as chaves em dim_identifiers, incluindo as de perfis fundidos.
+10. Matriz de rastreabilidade
+Correspondência entre os requisitos da Lista de Requisitos v0.5 e as user stories que os concretizam. Serve para verificar cobertura antes do fecho do âmbito e para avaliar impacto quando um requisito é alterado.
+Requisito
+User stories que o concretizam
+RF-MC-01
+US-S1.2-01, US-S4.1-06, US-S1.2-09
+RF-MC-02
+US-S1.2-02, US-S1.2-03, US-S1.2-08, US-S5.2-03, US-S1.2-09, US-S2.1-10
+RF-MC-03
+US-S1.1-02, US-S1.2-02
+RF-MC-04
+US-S1.1-01, US-S4.1-02
+RF-MC-05
+US-S1.1-01
+RF-MC-06
+US-S1.1-03, US-S1.1-05, US-S2.1-11
+RF-MC-07
+—
+RF-MC-08
+US-S1.1-04, US-S1.3-01
+RF-MC-09
+US-S1.3-04
+RF-MC-10
+US-S1.2-06
+RF-MC-11
+—
+RF-MC-12
+—
+RF-BO-01
+US-S1.1-03
+—
+RF-BO-03
+US-S1.2-06
+RF-BO-04
+—
+RF-BO-08
+US-S2.1-09, US-T1-01, US-T1-02, US-T1-03, US-S2.1-10
+RF-BO-09
+—
+RF-CA-01
+US-S3.2-01, US-S5.1-03, US-T1-03, US-S2.1-11
+RF-CA-02
+US-S3.1-01, US-S3.1-02
+RF-CA-03
+—
+RF-CA-04
+US-S3.2-02
+RF-MS-01
+US-S4.1-01
+RF-MS-02
+US-S4.1-02
+RF-MS-03
+US-S4.1-03, US-S4.1-04, US-S4.1-05
+RF-MS-04
+US-S4.1-06, US-S4.1-07
+RF-MS-05
+US-S4.1-08
+RF-MS-06
+US-S1.3-04
+RF-MS-07
+US-S4.1-11
+RF-MS-08
+—
+RF-MS-09
+—
+RF-API-01
+US-S5.2-01
+RF-API-02
+US-S1.2-08, US-S5.2-02, US-S5.2-03
+RF-API-03
+US-S5.3-01, US-S5.3-02
+RF-API-04
+US-S1.2-03, US-S5.3-03
+RF-API-05
+US-S1.2-03, US-S5.3-04
+RF-API-06
+US-S5.4-01, US-S5.4-03, US-S5.4-04
+RF-API-07
+—
+RF-API-08
+US-S5.2-04
+RNF-01
+—
+RNF-02
+US-S1.1-04, US-S5.1-01, US-S5.1-03
+RNF-03
+US-S5.4-04
+RNF-04
+—
+RNF-05
+US-S5.1-01, US-T1-01
+RNF-06
+—
+RNF-07
+—
+RNF-08
+US-S4.1-12
+RNF-09
+—
+A criar na v0.5 — gestão assistida
+US-S2.1-10, US-S2.1-11
+A criar na v0.5 — informação de gestão
+US-S5.2-06, US-S5.2-07
+A criar na v0.5 — alteração de e-mail do titular
+US-S1.3-06
+48 requisitos com cobertura direta.
+11. Especificação visual do Frontend do CMP
+Esta secção documenta, ecrã a ecrã, o frontend interno do CMP (consulta, auditoria e administração). É fiel ao protótipo navegável: cada ecrã apresenta o print, a finalidade, as operações, os acessos por perfil e os requisitos (user stories) que satisfaz. Princípios transversais: autenticação Entra ID (T1), controlo de acessos por perfil (RBAC), multi-tenant (T3), bilingue PT/ES (T4) e e-mail como identificador do registo de consentimento.
+11.1. Autenticação — Entra ID
+Ponto de entrada. O colaborador autentica-se por federação com o diretório corporativo (Microsoft Entra ID); a aplicação não guarda credenciais próprias e recebe do IdP a identidade e os perfis. O seletor PT/ES já está disponível no login.
+Operações
+Iniciar sessão com Entra ID (SSO).
+Selecionar idioma (PT/ES) antes de entrar.
+Requisitos (US): US-T1-01   ·   US-T4-01
+11.2. Painel
+Vista de entrada após autenticação. Resume o estado da plataforma no contexto ativo — perfil, empresa (tenant) e idioma. Indicadores e acessos dependem do perfil e da empresa selecionada.
+Operações
+Ver indicadores (textos ativos, pendentes, integridade do diário).
+Trocar de perfil, empresa (tenant) e idioma no topo.
+Navegar para as áreas a que o perfil tem acesso.
+Requisitos (US): US-T1-02   ·   US-T3-01   ·   US-T3-02   ·   US-T4-01
+11.3. Painel — espanhol · tenant CTT Express
+O mesmo painel em espanhol e no tenant CTT Express: a interface está integralmente traduzida e os dados são isolados por empresa (o CTT Express apresenta o seu próprio conjunto).
+Requisitos (US): US-T3-01   ·   US-T4-01
+11.4. Textos legais (bilingue)
+Gestão do texto legal: editorial, versionamento e publicação no dotCMS (geridos pelos seus acessos); o CMP consulta o conteúdo em vigor.
+Operações
+Publicar (apenas DPO_Admin) — arquiva a versão anterior.
+Editar o conteúdo em PT e ES em separadores distintos.
+Acesso por perfil
+DPO_Admin: gere o catálogo de categorias e parceiros no CMP.
+DPO_Admin: única a publicar e arquivar.
+Publicação bloqueada se faltar a versão PT ou ES.
+Requisitos (US): US-T4-02   ·   US-T3-03
+11.5. Textos legais — perfil DPO_Admin (RBAC)
+O mesmo ecrã no perfil DPO_Admin: as ações que não competem ao perfil aparecem bloqueadas (Publicar/Arquivar), demonstrando o controlo de acessos.
+Requisitos (US): US-S2.1-09   ·   US-T1-02
+11.6. Catálogo & parceiros
+Gestão das sub-opções e parceiros das categorias UC-01 a UC-05, de forma independente por empresa (tenant), alinhada com as parcerias comerciais em vigor.
+Operações
+Registar, ativar e desativar sub-opções.
+Registar parceiros por categoria.
+Configuração isolada por tenant.
+Acesso por perfil
+DPO_Admin: gere o catálogo.
+DPO_Admin / Consulta_Geral: consulta.
+Requisitos (US): US-T3-03
+11.8. Consulta de titular
+Consulta, apenas de leitura, do histórico completo e imutável das decisões de um titular. O titular é localizado pelo e-mail, que é o identificador do registo de consentimento. Cada decisão indica a língua em que o texto foi apresentado.
+Operações
+Localizar o titular pelo e-mail.
+Ver a linha temporal de decisões (concedeu/revogou), com tipologia e língua.
+Acesso por perfil
+DPO_Admin: consulta.
+Interface exclusivamente de leitura — nunca permite alteração.
+Requisitos (US): US-S3.2-02   ·   US-S1.3-01
+11.9. Diário de auditoria
+Registo imutável e encadeado por hashes de operações e acessos, com âmbito por empresa (tenant). Pesquisável por período e administrador; permite verificar a integridade da cadeia. A troca de tenant fica registada.
+Operações
+Pesquisar eventos por período e administrador.
+Verificar a integridade da cadeia de hashes.
+Ver operações negadas.
+Acesso por perfil
+DPO_Admin e Consulta_Geral: consulta e verificação.
+DPO_Admin: sem acesso.
+Requisitos (US): US-S3.2-01   ·   US-S3.1-01   ·   US-S3.1-02   ·   US-T3-02
+11.10. Matriz de permissões
+Vista de governação que torna explícito o privilégio mínimo: que operações cada perfil executa. É esta matriz que comanda a UI — botões bloqueados e menus ocultos refletem-na. As permissões são avaliadas em conjunto com a empresa (tenant) ativa.
+Operações
+Consultar a matriz operação × perfil.
+Compreender o âmbito de cada perfil por tenant.
+Requisitos (US): US-S2.1-09   ·   US-T1-02   ·   US-T3-02
+NOVO — a matriz de permissões passa a ter de contemplar uma operação que ainda não consta da imagem acima: remover consentimentos em nome do titular, atribuída ao perfil DPO_Admin e ao perfil DPO_Admin (US-S2.1-10, US-S2.1-11). Os indicadores agregados não são operação de Backoffice — o acesso faz-se por API ou por extração e é concedido a sistemas consumidores no API Gateway (US-S5.2-06, US-S5.2-07). A imagem da especificação visual será atualizada quando a matriz for revista com a equipa de Segurança.
