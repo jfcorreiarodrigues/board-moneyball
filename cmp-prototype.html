@@ -222,7 +222,7 @@ const I18N={
   banner:"PROTÓTIPO NAVEGÁVEL · inspiração visual dos requisitos — não é o produto final",
   internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
   specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
-  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & parceiros", navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navExtract:"Extrações & indicadores", navPerms:"Matriz de permissões",
+  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & textos legais", navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navExtract:"Extrações & indicadores", navPerms:"Matriz de permissões",
   secConfig:"Configuração", secAudit:"Consulta & Auditoria", secAnalytics:"Analytics", secGov:"Governação",
   reqInView:"Requisitos nesta vista",
   home:"Painel", homeSub:"Visão geral da plataforma. O que vês depende do teu perfil, da empresa (tenant) e do idioma ativos.",
@@ -232,8 +232,10 @@ const I18N={
   ctxNote:"Contexto ativo: empresa", langNote:"idioma", switchHint:"Troca o PERFIL, a EMPRESA e o idioma no topo para veres a UI reagir.",
   legal:"Textos legais", legalSub:"Geridos no dotCMS (fora do CMP). Aqui consulta-se apenas a versão em vigor de cada finalidade (PT e ES).",
   requisitos:"Requisitos", colCat:"Categoria", colText:"Texto", colVer:"Versão", colStatus:"Estado", colLangs:"Línguas",
-  catalog:"Catálogo & parceiros", catalogSub:"Sub-opções e parceiros das categorias UC-01 a UC-05, por empresa (tenant).",
-  categories:"Categorias",
+  catalog:"Catálogo & textos legais", catalogSub:"As finalidades (UC-01 a UC-05) num só sítio: sub-opções, parceiros e a versão do texto legal em vigor — por empresa (tenant). Tudo gerido no dotCMS; aqui apenas se consulta.",
+  categories:"Finalidades",
+  colLegal:"Texto legal (versão)", noLegal:"Sem texto ativo",
+  catalogMergedNote:"O catálogo de finalidades e o texto legal em vigor de cada uma são geridos no dotCMS. O CMP não edita — apenas consulta a versão aplicável (S6.1).",
   colSubs:"Sub-opções", colPartners:"Parceiros", stActiveF:"Ativa", stInactiveF:"Inativa",
   tComm:"Comunicação", tShare:"Partilha de dados",
   subject:"Consulta de titular", subjectSub:"Histórico completo e imutável das decisões de um titular — para responder a pedidos de exercício de direitos.",
@@ -250,7 +252,7 @@ const I18N={
   opXrole:"Operação × Perfil",
   permsNote:"O perfil ativo está a comandar toda a UI: os botões bloqueados (🔒) e os itens de menu ocultos refletem esta matriz. As permissões são avaliadas em conjunto com a empresa (tenant) ativa (US-T3-02).",
   needTip:"Requer:", noPermNav:"Sem permissão para este perfil",
-  opLegalView:"Ver textos legais (versão em vigor)", opCatalog:"Ver catálogo & parceiros",
+  opLegalView:"Ver textos legais (versão em vigor)", opCatalog:"Ver catálogo & textos legais",
   opSubject:"Consultar titular", opSubjectEdit:"Editar consentimentos do titular",
   opExtract:"Solicitar extrações de indicadores",
   opUsers:"Gerir perfis de acesso (utilizadores)", opAudit:"Pesquisar auditoria",
@@ -294,7 +296,7 @@ const I18N={
   banner:"PROTOTIPO NAVEGABLE · inspiración visual de los requisitos — no es el producto final",
   internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
   specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
-  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y socios", navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navExtract:"Extracciones e indicadores", navPerms:"Matriz de permisos",
+  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y textos legales", navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navExtract:"Extracciones e indicadores", navPerms:"Matriz de permisos",
   secConfig:"Configuración", secAudit:"Consulta y Auditoría", secAnalytics:"Analítica", secGov:"Gobernanza",
   reqInView:"Requisitos en esta vista",
   home:"Panel", homeSub:"Visión general de la plataforma. Lo que ves depende de tu perfil, de la empresa (tenant) y del idioma activos.",
@@ -304,8 +306,10 @@ const I18N={
   ctxNote:"Contexto activo: empresa", langNote:"idioma", switchHint:"Cambia el PERFIL, la EMPRESA y el idioma arriba para ver la UI reaccionar.",
   legal:"Textos legales", legalSub:"Gestionados en dotCMS (fuera del CMP). Aquí solo se consulta la versión vigente de cada finalidad (PT y ES).",
   requisitos:"Requisitos", colCat:"Categoría", colText:"Texto", colVer:"Versión", colStatus:"Estado", colLangs:"Idiomas",
-  catalog:"Catálogo y socios", catalogSub:"Sub-opciones y socios de las categorías UC-01 a UC-05, por empresa (tenant).",
-  categories:"Categorías",
+  catalog:"Catálogo y textos legales", catalogSub:"Las finalidades (UC-01 a UC-05) en un solo sitio: sub-opciones, socios y la versión del texto legal vigente — por empresa (tenant). Todo gestionado en dotCMS; aquí solo se consulta.",
+  categories:"Finalidades",
+  colLegal:"Texto legal (versión)", noLegal:"Sin texto vigente",
+  catalogMergedNote:"El catálogo de finalidades y el texto legal vigente de cada una se gestionan en dotCMS. El CMP no edita — solo consulta la versión aplicable (S6.1).",
   colSubs:"Sub-opciones", colPartners:"Socios", stActiveF:"Activa", stInactiveF:"Inactiva",
   tComm:"Comunicación", tShare:"Compartición de datos",
   subject:"Consulta de titular", subjectSub:"Historial completo e inmutable de las decisiones de un titular — para responder a solicitudes de ejercicio de derechos.",
@@ -322,7 +326,7 @@ const I18N={
   opXrole:"Operación × Perfil",
   permsNote:"El perfil activo comanda toda la UI: los botones bloqueados (🔒) y los elementos de menú ocultos reflejan esta matriz. Los permisos se evalúan junto con la empresa (tenant) activa (US-T3-02).",
   needTip:"Requiere:", noPermNav:"Sin permiso para este perfil",
-  opLegalView:"Ver textos legales (versión vigente)", opCatalog:"Ver catálogo y socios",
+  opLegalView:"Ver textos legales (versión vigente)", opCatalog:"Ver catálogo y textos legales",
   opSubject:"Consultar titular", opSubjectEdit:"Editar consentimientos del titular",
   opExtract:"Solicitar extracciones de indicadores",
   opUsers:"Gestionar perfiles de acceso (usuarios)", opAudit:"Buscar auditoría",
@@ -369,9 +373,8 @@ const ROLES={
   Marketing_Analitico:{person:"Carlos Santos",initials:"CS",desc:{pt:"Analista de Marketing",es:"Analista de Marketing"}},
 };
 const PERMS={
-  // Textos legais: geridos fora da plataforma -> apenas leitura da versão em vigor
-  "legal.view":["DPO_Admin","Consulta_Geral","Marketing_Analitico"],
-  "catalog.view":["DPO_Admin","Marketing_Analitico"],
+  // Catálogo de finalidades + textos legais (fundidos): geridos no dotCMS, apenas leitura
+  "catalog.view":["DPO_Admin","Consulta_Geral","Marketing_Analitico"],
   "subject.view":["DPO_Admin","Consulta_Geral"],
   // DPO_Admin: edita os consentimentos de um titular e gere os perfis de acesso ao CMP
   "subject.edit":["DPO_Admin"],"users.manage":["DPO_Admin"],
@@ -386,7 +389,6 @@ const can=(op)=>PERMS[op]&&PERMS[op].includes(state.role);
 const NAV=[
   {id:"home",ic:"▤",k:"navHome",need:null},
   {sec:"secConfig"},
-  {id:"legal",ic:"§",k:"navLegal",need:"legal.view",us:"S2.1"},
   {id:"catalog",ic:"⛃",k:"navCatalog",need:"catalog.view",us:"S2.1-05"},
   {sec:"secAudit"},
   {id:"subject",ic:"◑",k:"navSubject",need:"subject.view",us:"S3.2-02"},
@@ -688,19 +690,6 @@ const VIEWS={
      <div class="note">↳ ${t("switchHint")}</div>
   </div></div>`;
  },
- legal(){
-  // Geridos fora da plataforma -> apenas a versão em vigor (status Ativo), só leitura
-  const rows=LEGAL[state.tenant].filter(l=>l.status==="Ativo");
-  return head(t("legal"),t("legalSub"),t("secConfig")+" / "+t("legal"))
-  +`<div class="req-inline"><span class="us">US-S2.1-03</span><span class="us">US-T4-02</span></div>
-  <div class="note" style="margin:0 0 14px"><span class="pill mute">${t("readonly")}</span> &nbsp;${t("legalExternalNote")}</div>
-  <div class="card panel"><h3>${t("currentVersions")} · 🏢 ${state.tenant}</h3><div class="tabwrap"><table>
-    <thead><tr><th>${t("colCat")}</th><th>${t("colText")}</th><th>${t("colVer")}</th><th>${t("colLangs")}</th><th>${t("colStatus")}</th></tr></thead>
-    <tbody>${rows.map(l=>`<tr><td class="mono">${l.cat}</td><td>${L(l.name)}</td><td class="mono">${l.ver}</td>
-      <td>${l.langs.includes("ES")?'<span class="pill ok">'+l.langs+'</span>':'<span class="pill warn">'+l.langs+'</span>'}</td>
-      <td><span class="pill ok"><span class="dot" style="background:var(--ok)"></span>${t("stInForce")}</span></td></tr>`).join("")}</tbody></table></div></div>
-   <div class="note">🔗 ${t("legalManagedOut")}</div>`;
- },
  users(){
   const USERS=[
    {name:"João Rodrigues",email:"joao.rodrigues@ctt.pt",role:"DPO_Admin",tenant:"CTT · CTT Express"},
@@ -721,14 +710,23 @@ const VIEWS={
   <div class="note">👤 ${t("usersNote")}</div>`;
  },
  catalog(){
-  const rows=CATS[state.tenant];
+  // Ecrã fundido: catálogo de finalidades + texto legal em vigor de cada uma (antes eram 2 tabs).
+  const cats=CATS[state.tenant];
+  const legalByCat={};
+  LEGAL[state.tenant].filter(l=>l.status==="Ativo").forEach(l=>{if(!legalByCat[l.cat])legalByCat[l.cat]=l;});
   return head(t("catalog"),t("catalogSub"),t("secConfig")+" / "+t("catalog"))
-  +`<div class="req-inline"><span class="us">US-S2.1-05</span><span class="us">US-T3-03</span></div>
-  <div class="note" style="margin:0 0 14px"><span class="pill mute">${t("readonly")}</span> &nbsp; Sub-opções e parceiros são geridos no dotCMS.</div>
+  +`<div class="req-inline"><span class="us">US-S2.1-05</span><span class="us">US-S2.1-03</span><span class="us">US-T4-02</span></div>
+  <div class="note" style="margin:0 0 14px"><span class="pill mute">${t("readonly")}</span> &nbsp;${t("catalogMergedNote")}</div>
   <div class="card panel"><h3>${t("categories")} · 🏢 ${state.tenant}</h3><div class="tabwrap"><table>
-   <thead><tr><th>${t("colCat")}</th><th>${t("colText")}</th><th>${t("colSubs")}</th><th>${t("colPartners")}</th><th>${t("colStatus")}</th></tr></thead>
-   <tbody>${rows.map(c=>`<tr><td class="mono">${c.code}</td><td>${L(c.label)}</td><td>${c.sub}</td><td>${c.partners}</td>
-     <td>${c.active?'<span class="pill ok">'+t("stActiveF")+'</span>':'<span class="pill mute">'+t("stInactiveF")+'</span>'}</td></tr>`).join("")}</tbody></table></div></div>`;
+   <thead><tr><th>${t("colCat")}</th><th>${t("colText")}</th><th>${t("colSubs")}</th><th>${t("colPartners")}</th><th>${t("colLegal")}</th><th>${t("colLangs")}</th><th>${t("colStatus")}</th></tr></thead>
+   <tbody>${cats.map(c=>{
+     const lg=legalByCat[c.code];
+     const legalCell=lg?`<span class="mono">${lg.ver}</span> <span class="pill ok" style="margin-left:4px"><span class="dot" style="background:var(--ok)"></span>${t("stInForce")}</span>`:`<span class="pill mute">${t("noLegal")}</span>`;
+     const langCell=lg?(lg.langs.includes("ES")?'<span class="pill ok">'+lg.langs+'</span>':'<span class="pill warn">'+lg.langs+'</span>'):'<span class="tag">—</span>';
+     return `<tr><td class="mono">${c.code}</td><td>${L(c.label)}</td><td>${c.sub}</td><td>${c.partners}</td>
+      <td>${legalCell}</td><td>${langCell}</td>
+      <td>${c.active?'<span class="pill ok">'+t("stActiveF")+'</span>':'<span class="pill mute">'+t("stInactiveF")+'</span>'}</td></tr>`;}).join("")}</tbody></table></div></div>
+   <div class="note">🔗 ${t("legalManagedOut")}</div>`;
  },
  subject(){
   const canEdit=can("subject.edit");
@@ -769,7 +767,7 @@ const VIEWS={
   <div class="note">🗒️ ${t("auditNote")}</div>`;
  },
  perms(){
-  const ops=[["opLegalView","legal.view"],["opCatalog","catalog.view"],
+  const ops=[["opCatalog","catalog.view"],
    ["opSubject","subject.view"],["opSubjectEdit","subject.edit"],["opExtract","extractions.view"],
    ["opUsers","users.manage"],["opAudit","audit.view"]];
   const roles=Object.keys(ROLES);
