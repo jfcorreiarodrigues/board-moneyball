@@ -210,8 +210,8 @@ const I18N={
   banner:"PROTÓTIPO NAVEGÁVEL · inspiração visual dos requisitos — não é o produto final",
   internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
   specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
-  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & parceiros", navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navPerms:"Matriz de permissões",
-  secConfig:"Configuração", secAudit:"Consulta & Auditoria", secGov:"Governação",
+  navHome:"Painel", navLegal:"Textos legais", navCatalog:"Catálogo & parceiros", navSubject:"Consulta de titular", navAudit:"Diário de auditoria", navExtract:"Extrações & indicadores", navPerms:"Matriz de permissões",
+  secConfig:"Configuração", secAudit:"Consulta & Auditoria", secAnalytics:"Analytics", secGov:"Governação",
   reqInView:"Requisitos nesta vista",
   home:"Painel", homeSub:"Visão geral da plataforma. O que vês depende do teu perfil, da empresa (tenant) e do idioma ativos.",
   kActive:"Textos legais em vigor",
@@ -240,8 +240,19 @@ const I18N={
   needTip:"Requer:", noPermNav:"Sem permissão para este perfil",
   opLegalView:"Ver textos legais (versão em vigor)", opCatalog:"Ver catálogo & parceiros",
   opSubject:"Consultar titular", opSubjectEdit:"Editar consentimentos do titular",
+  opExtract:"Solicitar extrações de indicadores",
   opUsers:"Gerir perfis de acesso (utilizadores)", opAudit:"Pesquisar auditoria",
   navUsers:"Gestão de utilizadores",
+  extractions:"Extrações & indicadores", extractionsSub:"Agregados de consentimento por categoria, sub-opção e canal — para relatórios e análises, sem dados ao nível do titular (US-S5.2-07).",
+  filtersTitle:"Filtros",periodLabel:"Período:", categoriesLabel:"Categorias:", channelsLabel:"Canais:",
+  period30d:"Últimos 30 dias", period90d:"Últimos 90 dias", periodCustom:"Período personalizado",
+  requestExtraction:"📊 Solicitar Extração",
+  previousExtractions:"Extrações Anteriores",
+  extractionId:"ID", extractionWhen:"Quando", extractionBy:"Solicitado por", extractionFilters:"Filtros",
+  extractionStatus:"Estado", statusCompleted:"✓ Concluída", statusProcessing:"⏳ Processando",
+  downloadJSON:"📥 JSON", downloadCSV:"📥 CSV",
+  extractionNote:"Os indicadores agregam consentimentos por categoria, sub-opção e canal. Cada extração fica registada em auditoria. Os dados são segmentados por tenant.",
+  noExtractions:"Sem extrações anteriores neste tenant.",
   legalExternalNote:"Os textos legais são geridos no dotCMS. O CMP não gere conteúdos — apenas consulta a versão em vigor.",
   currentVersions:"Versão em vigor por finalidade", stInForce:"Em vigor",
   legalManagedOut:"A criação, edição e versionamento dos textos ocorrem no dotCMS; o CMP obtém o conteúdo aplicável através da API de conteúdos (S6.1).",
@@ -271,8 +282,8 @@ const I18N={
   banner:"PROTOTIPO NAVEGABLE · inspiración visual de los requisitos — no es el producto final",
   internal:"Frontend interno", theme:"Tema", tenant:"EMPRESA", profile:"PERFIL",
   specOn:"◉ Requisitos: ON", specOff:"◉ Requisitos: OFF",
-  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y socios", navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navPerms:"Matriz de permisos",
-  secConfig:"Configuración", secAudit:"Consulta y Auditoría", secGov:"Gobernanza",
+  navHome:"Panel", navLegal:"Textos legales", navCatalog:"Catálogo y socios", navSubject:"Consulta de titular", navAudit:"Diario de auditoría", navExtract:"Extracciones e indicadores", navPerms:"Matriz de permisos",
+  secConfig:"Configuración", secAudit:"Consulta y Auditoría", secAnalytics:"Analítica", secGov:"Gobernanza",
   reqInView:"Requisitos en esta vista",
   home:"Panel", homeSub:"Visión general de la plataforma. Lo que ves depende de tu perfil, de la empresa (tenant) y del idioma activos.",
   kActive:"Textos legales vigentes",
@@ -301,8 +312,19 @@ const I18N={
   needTip:"Requiere:", noPermNav:"Sin permiso para este perfil",
   opLegalView:"Ver textos legales (versión vigente)", opCatalog:"Ver catálogo y socios",
   opSubject:"Consultar titular", opSubjectEdit:"Editar consentimientos del titular",
+  opExtract:"Solicitar extracciones de indicadores",
   opUsers:"Gestionar perfiles de acceso (usuarios)", opAudit:"Buscar auditoría",
   navUsers:"Gestión de usuarios",
+  extractions:"Extracciones e indicadores", extractionsSub:"Agregados de consentimiento por categoría, sub-opción y canal — para reportes y análisis, sin datos a nivel del titular (US-S5.2-07).",
+  filtersTitle:"Filtros",periodLabel:"Período:", categoriesLabel:"Categorías:", channelsLabel:"Canales:",
+  period30d:"Últimos 30 días", period90d:"Últimos 90 días", periodCustom:"Período personalizado",
+  requestExtraction:"📊 Solicitar Extracción",
+  previousExtractions:"Extracciones Anteriores",
+  extractionId:"ID", extractionWhen:"Cuándo", extractionBy:"Solicitado por", extractionFilters:"Filtros",
+  extractionStatus:"Estado", statusCompleted:"✓ Completada", statusProcessing:"⏳ Procesando",
+  downloadJSON:"📥 JSON", downloadCSV:"📥 CSV",
+  extractionNote:"Los indicadores agregan consentimientos por categoría, sub-opción y canal. Cada extracción queda registrada en auditoría. Los datos están segmentados por tenant.",
+  noExtractions:"Sin extracciones anteriores en este tenant.",
   legalExternalNote:"Los textos legales se gestionan en dotCMS. El CMP no gestiona contenidos — solo consulta la versión vigente.",
   currentVersions:"Versión vigente por finalidad", stInForce:"Vigente",
   legalManagedOut:"La creación, edición y versionado de los textos ocurren en dotCMS; el CMP obtiene el contenido aplicable a través de la API de contenidos (S6.1).",
@@ -342,6 +364,7 @@ const PERMS={
   // DPO_Admin: edita os consentimentos de um titular e gere os perfis de acesso ao CMP
   "subject.edit":["DPO_Admin"],"users.manage":["DPO_Admin"],
   "audit.view":["DPO_Admin","Consulta_Geral"],
+  "extractions.view":["DPO_Admin","Marketing_Analitico"], // US-S5.2-07: extrações de indicadores
   "perms.view":["DPO_Admin","Consulta_Geral","Marketing_Analitico"],
   "perms.manage":["DPO_Admin"], // US-S2.1-14: DPO gere a matriz operação × perfil
 };
@@ -356,6 +379,8 @@ const NAV=[
   {sec:"secAudit"},
   {id:"subject",ic:"◑",k:"navSubject",need:"subject.view",us:"S3.2-02"},
   {id:"audit",ic:"◇",k:"navAudit",need:"audit.view",us:"S3.2-01"},
+  {sec:"secAnalytics"},
+  {id:"extractions",ic:"📊",k:"navExtract",need:"extractions.view",us:"S5.2-07"},
   {sec:"secGov"},
   {id:"users",ic:"👤",k:"navUsers",need:"users.manage",us:"T1-02"},
   {id:"perms",ic:"⚿",k:"navPerms",need:"perms.view",us:"S2.1-09"},
@@ -410,6 +435,9 @@ const AUDIT={
        es:"Consultó el catálogo de finalidades y socios"}},
   {ts:"2026-08-07 14:15",user:"João Rodrigues",role:"DPO_Admin",ref:"",
    op:{pt:"Mudou de empresa: CTT Express → CTT",es:"Cambió de empresa: CTT Express → CTT"}},
+  {ts:"2026-08-11 14:30",user:"Carlos Santos",role:"Marketing_Analitico",ref:"EXT-2026-0847 · UC-01,UC-02 · ago 1-31",
+   op:{pt:"Solicitou extração de indicadores de consentimento",
+       es:"Solicitó extracción de indicadores de consentimiento"}},
  ],
  "CTT Express":[
   {ts:"2026-08-10 12:40",user:"João Rodrigues",role:"DPO_Admin",ref:"REQ-2026-000131 · Balcão",
@@ -427,6 +455,40 @@ const SUBJECT=[
   {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
   {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-02 · Partilha Telecom",es:"UC-02 · Compartición Telecom"},tipo:"share",lang:"ES"},
 ];
+// Extrações de indicadores (agregados de consentimento, sem dados ao nível do titular)
+const EXTRACTIONS={
+ "CTT":[
+  {id:"EXT-2026-0847",ts:"2026-08-11 14:30",by:{name:"Carlos Santos",role:"Marketing_Analitico"},
+   period:{from:"2026-08-01",to:"2026-08-31"},filters:"UC-01, UC-02",status:"completed",
+   data:{summary:{totalSubjects:52000,withConsent:45230,withoutConsent:6770},
+    byCategory:[
+      {code:"UC-01",name:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},
+       stats:{total:45230,active:38920,revoked:6310},
+       bySubOption:[
+        {id:"prod",name:{pt:"Produtos e serviços",es:"Productos y servicios"},active:38920,revoked:2100},
+        {id:"promo",name:{pt:"Promoções",es:"Promociones"},active:25000,revoked:3210},
+        {id:"news",name:{pt:"Newsletter",es:"Boletín"},active:12000,revoked:1000}
+       ],
+       byChannel:[
+        {ch:"email",active:22000,revoked:1500},{ch:"sms",active:8920,revoked:800},{ch:"push",active:7000,revoked:1010}
+       ]},
+      {code:"UC-02",name:{pt:"Partilha Telecom",es:"Compartición Telecom"},
+       stats:{total:32100,active:28900,revoked:3200},
+       bySubOption:[
+        {id:"telecom",name:{pt:"Telecomunicações",es:"Telecomunicaciones"},active:28900,revoked:2100},
+        {id:"seguros",name:{pt:"Seguros",es:"Seguros"},active:12000,revoked:1100}
+       ],byChannel:[{ch:"email",active:15000,revoked:800},{ch:"sms",active:13900,revoked:2400}]}
+    ]}},
+  {id:"EXT-2026-0820",ts:"2026-08-08 10:15",by:{name:"João Rodrigues",role:"DPO_Admin"},
+   period:{from:"2026-07-01",to:"2026-07-31"},filters:"UC-01",status:"completed",
+   data:{summary:{totalSubjects:52000,withConsent:41200,withoutConsent:10800}}}
+ ],
+ "CTT Express":[
+  {id:"EXT-2026-0835",ts:"2026-08-10 09:45",by:{name:"Carlos Santos",role:"Marketing_Analitico"},
+   period:{from:"2026-08-01",to:"2026-08-31"},filters:"UC-01, UC-02",status:"processing",
+   data:null}
+ ],
+};
 // Catálogo de consentimentos (vista de cliente): categoria -> sub-opções + texto legal em vigor
 const CONSENT_CAT={
  "CTT":[
@@ -692,8 +754,8 @@ const VIEWS={
  },
  perms(){
   const ops=[["opLegalView","legal.view"],["opCatalog","catalog.view"],
-   ["opSubject","subject.view"],["opSubjectEdit","subject.edit"],["opUsers","users.manage"],
-   ["opAudit","audit.view"]];
+   ["opSubject","subject.view"],["opSubjectEdit","subject.edit"],["opExtract","extractions.view"],
+   ["opUsers","users.manage"],["opAudit","audit.view"]];
   const roles=Object.keys(ROLES);
   const edit=can("perms.manage");
   const cell=(op,r)=>{const on=PERMS[op].includes(r);
@@ -708,6 +770,44 @@ const VIEWS={
    <tbody>${ops.map(([lk,op])=>`<tr><td>${t(lk)} <span class="us">${op}</span></td>
      ${roles.map(r=>cell(op,r)).join("")}</tr>`).join("")}</tbody></table></div></div>
   <div class="note">${t("permsNote")}</div>${edit?`<div class="note">🔒 ${t("permsFixed")}</div>`:''}`;
+ },
+ extractions(){
+  const exts=(EXTRACTIONS[state.tenant]||[]).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const cats=CONSENT_CAT[state.tenant]||[],chs=["email","sms","push","letter"];
+  return head(t("extractions"),t("extractionsSub"),t("secAnalytics")+" / "+t("extractions"))
+  +`<div class="req-inline"><span class="us">US-S5.2-07</span></div>
+  <div class="card" style="padding:16px 18px;margin-bottom:14px">
+   <div class="grid g3" style="gap:12px;margin-bottom:12px">
+    <div class="field"><label>${t("periodLabel")}</label>
+     <select><option>${t("period30d")}</option><option>${t("period90d")}</option><option>${t("periodCustom")}</option></select></div>
+    <div class="field"><label>${t("categoriesLabel")}</label>
+     <input placeholder="UC-01, UC-02, ..."></div>
+    <div class="field"><label>${t("channelsLabel")}</label>
+     <input placeholder="email, sms, push, letter"></div>
+   </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">${actBtn(t("requestExtraction"),"extractions.view","primary")}</div>
+  </div>
+  <div class="note" style="margin-bottom:14px">ℹ️ ${t("extractionNote")}</div>
+  <div class="card panel"><h3>${t("previousExtractions")} · 🏢 ${state.tenant}</h3>
+   ${exts.length===0?`<div style="padding:16px;color:var(--ink-soft)">${t("noExtractions")}</div>`:
+   `<div style="display:flex;flex-direction:column;gap:10px;padding:16px">${exts.map(e=>{
+    const status=e.status==='completed'?t("statusCompleted"):t("statusProcessing");
+    return \`<div class="card" style="padding:12px 14px;box-shadow:none;border:1px solid var(--line)">
+     <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px">
+      <div>
+       <div style="font-weight:600;font-size:.9rem"><span class="mono">\${e.id}</span></div>
+       <div style="font-size:.8rem;color:var(--ink-soft);margin-top:2px">\${e.ts} · \${e.by.name} (\${e.by.role})</div>
+      </div>
+      <div style="text-align:right;font-size:.8rem">\${status}</div>
+     </div>
+     <div style="font-size:.8rem;color:var(--ink-soft);margin-bottom:8px">
+      📅 \${e.period.from} a \${e.period.to} · Filtros: \${e.filters}
+     </div>
+     \${e.status==='completed'?
+      \`<div style="display:flex;gap:6px">\${actBtn(t("downloadJSON"),"extractions.view")} \${actBtn(t("downloadCSV"),"extractions.view")}</div>\`
+      :\`<div style="font-size:.75rem;color:var(--ink-soft)">⏳ Extração em processamento...</div>\`}
+    </div>\`}).join('')}</div>`}
+  </div>`;
  },
 };
 function renderView(){document.getElementById("main").innerHTML=(VIEWS[state.view]||VIEWS.home)();}
