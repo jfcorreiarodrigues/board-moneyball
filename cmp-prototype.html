@@ -107,6 +107,18 @@ body.nospec .reqbar,body.nospec .us,body.nospec .req-inline{display:none!importa
 .g3{grid-template-columns:repeat(3,1fr)}
 .g2{grid-template-columns:repeat(2,1fr)}
 @media(max-width:900px){.g3,.g2{grid-template-columns:1fr}}
+/* layout mobile: sem grid — os blocos empilham; barra lateral passa a tira horizontal */
+@media(max-width:720px){
+  #app.on{display:block}
+  .topbar{position:sticky;top:0;gap:8px;padding:8px 12px}
+  .side{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);gap:6px;padding:10px 12px;-webkit-overflow-scrolling:touch}
+  .side .sec{display:none}
+  .nav{width:auto;flex:0 0 auto;white-space:nowrap;font-size:.82rem;padding:.5em .7em}
+  .nav .rq{display:none}
+  main{padding:18px 16px 60px}
+  .page-head h1{font-size:1.25rem}
+  .switch{padding:3px 6px}
+}
 .stat{padding:16px 18px}
 .stat .k{font-size:.78rem;color:var(--ink-soft);font-weight:600}
 .stat .v{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
@@ -792,21 +804,22 @@ const VIEWS={
    ${exts.length===0?`<div style="padding:16px;color:var(--ink-soft)">${t("noExtractions")}</div>`:
    `<div style="display:flex;flex-direction:column;gap:10px;padding:16px">${exts.map(e=>{
     const status=e.status==='completed'?t("statusCompleted"):t("statusProcessing");
-    return \`<div class="card" style="padding:12px 14px;box-shadow:none;border:1px solid var(--line)">
+    const actions=e.status==='completed'
+      ? `<div style="display:flex;gap:6px">${actBtn(t("downloadJSON"),"extractions.view")} ${actBtn(t("downloadCSV"),"extractions.view")}</div>`
+      : `<div style="font-size:.75rem;color:var(--ink-soft)">${t("statusProcessing")}…</div>`;
+    return `<div class="card" style="padding:12px 14px;box-shadow:none;border:1px solid var(--line)">
      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px">
       <div>
-       <div style="font-weight:600;font-size:.9rem"><span class="mono">\${e.id}</span></div>
-       <div style="font-size:.8rem;color:var(--ink-soft);margin-top:2px">\${e.ts} · \${e.by.name} (\${e.by.role})</div>
+       <div style="font-weight:600;font-size:.9rem"><span class="mono">${e.id}</span></div>
+       <div style="font-size:.8rem;color:var(--ink-soft);margin-top:2px">${e.ts} · ${e.by.name} (${e.by.role})</div>
       </div>
-      <div style="text-align:right;font-size:.8rem">\${status}</div>
+      <div style="text-align:right;font-size:.8rem">${status}</div>
      </div>
      <div style="font-size:.8rem;color:var(--ink-soft);margin-bottom:8px">
-      📅 \${e.period.from} a \${e.period.to} · Filtros: \${e.filters}
+      📅 ${e.period.from} → ${e.period.to} · ${t("extractionFilters")}: ${e.filters}
      </div>
-     \${e.status==='completed'?
-      \`<div style="display:flex;gap:6px">\${actBtn(t("downloadJSON"),"extractions.view")} \${actBtn(t("downloadCSV"),"extractions.view")}</div>\`
-      :\`<div style="font-size:.75rem;color:var(--ink-soft)">⏳ Extração em processamento...</div>\`}
-    </div>\`}).join('')}</div>`}
+     ${actions}
+    </div>`;}).join('')}</div>`}
   </div>`;
  },
 };
