@@ -467,38 +467,59 @@ const SUBJECT=[
   {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
   {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-02 · Partilha Telecom",es:"UC-02 · Compartición Telecom"},tipo:"share",lang:"ES"},
 ];
-// Extrações de indicadores (agregados de consentimento, sem dados ao nível do titular)
+// Extrações de indicadores (US-S5.2-07) — estrutura alinhada com o contrato de dados:
+// envelope + bloco `metrics` reutilizável em cada nó. Agregados apenas; nunca dados do titular.
+// metrics = {activeAtEnd, revokedAtEnd, grantedInPeriod, revokedInPeriod, netChange, base, coverageRate}
 const EXTRACTIONS={
  "CTT":[
-  {id:"EXT-2026-0847",ts:"2026-08-11 14:30",by:{name:"Carlos Santos",role:"Marketing_Analitico"},
-   period:{from:"2026-08-01",to:"2026-08-31"},filters:"UC-01, UC-02",status:"completed",
-   data:{summary:{totalSubjects:52000,withConsent:45230,withoutConsent:6770},
+  {extractionId:"EXT-2026-0847",schemaVersion:"1.0",tenant:"CTT",
+   generatedAt:"2026-08-11T14:30:12Z",
+   requestedBy:{type:"user",id:"carlos.santos@ctt.pt",role:"Marketing_Analitico"},
+   request:{period:{from:"2026-08-01",to:"2026-08-31"},categories:["UC-01","UC-02"],channels:["email","sms","push"]},
+   suppression:{minThreshold:100,suppressedCount:1},
+   status:"completed",
+   data:{
+    summary:{activeAtEnd:45230,revokedAtEnd:6770,grantedInPeriod:4200,revokedInPeriod:1850,netChange:2350,base:52000,coverageRate:0.8698},
     byCategory:[
       {code:"UC-01",name:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},
-       stats:{total:45230,active:38920,revoked:6310},
+       metrics:{activeAtEnd:38920,revokedAtEnd:6310,grantedInPeriod:2600,revokedInPeriod:1010,netChange:1590,base:52000,coverageRate:0.7485},
        bySubOption:[
-        {id:"prod",name:{pt:"Produtos e serviços",es:"Productos y servicios"},active:38920,revoked:2100},
-        {id:"promo",name:{pt:"Promoções",es:"Promociones"},active:25000,revoked:3210},
-        {id:"news",name:{pt:"Newsletter",es:"Boletín"},active:12000,revoked:1000}
+        {id:"prod",name:{pt:"Produtos e serviços",es:"Productos y servicios"},metrics:{activeAtEnd:36000,revokedAtEnd:2100,grantedInPeriod:1400,revokedInPeriod:420,netChange:980,base:52000,coverageRate:0.6923}},
+        {id:"promo",name:{pt:"Promoções",es:"Promociones"},metrics:{activeAtEnd:25000,revokedAtEnd:3210,grantedInPeriod:900,revokedInPeriod:510,netChange:390,base:52000,coverageRate:0.4808}}
        ],
        byChannel:[
-        {ch:"email",active:22000,revoked:1500},{ch:"sms",active:8920,revoked:800},{ch:"push",active:7000,revoked:1010}
+        {channel:"email",metrics:{activeAtEnd:22000,revokedAtEnd:1500}},
+        {channel:"sms",metrics:{activeAtEnd:8920,revokedAtEnd:800}},
+        {channel:"push",metrics:{activeAtEnd:7000,revokedAtEnd:1010}}
        ]},
       {code:"UC-02",name:{pt:"Partilha Telecom",es:"Compartición Telecom"},
-       stats:{total:32100,active:28900,revoked:3200},
+       metrics:{activeAtEnd:28900,revokedAtEnd:3200,grantedInPeriod:1600,revokedInPeriod:840,netChange:760,base:52000,coverageRate:0.5558},
        bySubOption:[
-        {id:"telecom",name:{pt:"Telecomunicações",es:"Telecomunicaciones"},active:28900,revoked:2100},
-        {id:"seguros",name:{pt:"Seguros",es:"Seguros"},active:12000,revoked:1100}
-       ],byChannel:[{ch:"email",active:15000,revoked:800},{ch:"sms",active:13900,revoked:2400}]}
-    ]}},
-  {id:"EXT-2026-0820",ts:"2026-08-08 10:15",by:{name:"João Rodrigues",role:"DPO_Admin"},
-   period:{from:"2026-07-01",to:"2026-07-31"},filters:"UC-01",status:"completed",
-   data:{summary:{totalSubjects:52000,withConsent:41200,withoutConsent:10800}}}
+        {id:"telecom",name:{pt:"Telecomunicações",es:"Telecomunicaciones"},metrics:{activeAtEnd:28900,revokedAtEnd:2100,grantedInPeriod:1600,revokedInPeriod:540,netChange:1060,base:52000,coverageRate:0.5558}},
+        {id:"seguros",name:{pt:"Seguros",es:"Seguros"},metrics:{activeAtEnd:12000,revokedAtEnd:1100,grantedInPeriod:400,revokedInPeriod:300,netChange:100,base:52000,coverageRate:0.2308}}
+       ],
+       byChannel:[
+        {channel:"email",metrics:{activeAtEnd:15000,revokedAtEnd:800}},
+        {channel:"sms",metrics:{activeAtEnd:13900,revokedAtEnd:2400}}
+       ]}
+    ],
+    suppressedNodes:[{level:"subOption",key:"UC-05/vantagens",reason:"below_min_threshold",threshold:100}]
+   }},
+  {extractionId:"EXT-2026-0820",schemaVersion:"1.0",tenant:"CTT",
+   generatedAt:"2026-08-08T10:15:00Z",
+   requestedBy:{type:"user",id:"joao.rodrigues@ctt.pt",role:"DPO_Admin"},
+   request:{period:{from:"2026-07-01",to:"2026-07-31"},categories:["UC-01"],channels:[]},
+   suppression:{minThreshold:100,suppressedCount:0},
+   status:"completed",
+   data:{summary:{activeAtEnd:41200,revokedAtEnd:10800,grantedInPeriod:3100,revokedInPeriod:2200,netChange:900,base:52000,coverageRate:0.7923}}}
  ],
  "CTT Express":[
-  {id:"EXT-2026-0835",ts:"2026-08-10 09:45",by:{name:"Carlos Santos",role:"Marketing_Analitico"},
-   period:{from:"2026-08-01",to:"2026-08-31"},filters:"UC-01, UC-02",status:"processing",
-   data:null}
+  {extractionId:"EXT-2026-0835",schemaVersion:"1.0",tenant:"CTT Express",
+   generatedAt:null,
+   requestedBy:{type:"user",id:"carlos.santos@ctt.pt",role:"Marketing_Analitico"},
+   request:{period:{from:"2026-08-01",to:"2026-08-31"},categories:["UC-01","UC-02"],channels:[]},
+   suppression:{minThreshold:100,suppressedCount:0},
+   status:"processing",data:null}
  ],
 };
 // Catálogo de consentimentos (vista de cliente): categoria -> sub-opções + texto legal em vigor
@@ -784,8 +805,10 @@ const VIEWS={
   <div class="note">${t("permsNote")}</div>${edit?`<div class="note">🔒 ${t("permsFixed")}</div>`:''}`;
  },
  extractions(){
-  const exts=(EXTRACTIONS[state.tenant]||[]).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const exts=(EXTRACTIONS[state.tenant]||[]).slice().sort((a,b)=>String(b.generatedAt||b.request.period.to).localeCompare(String(a.generatedAt||a.request.period.to)));
   const cats=CONSENT_CAT[state.tenant]||[],chs=["email","sms","push","letter"];
+  const fmtTs=iso=>iso?iso.slice(0,16).replace("T"," ")+" UTC":"—";
+  const fmtFilters=req=>{const c=(req.categories&&req.categories.length)?req.categories.join(", "):"todas";return c;};
   return head(t("extractions"),t("extractionsSub"),t("secAnalytics")+" / "+t("extractions"))
   +`<div class="req-inline"><span class="us">US-S5.2-07</span></div>
   <div class="card" style="padding:16px 18px;margin-bottom:14px">
@@ -810,13 +833,13 @@ const VIEWS={
     return `<div class="card" style="padding:12px 14px;box-shadow:none;border:1px solid var(--line)">
      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px">
       <div>
-       <div style="font-weight:600;font-size:.9rem"><span class="mono">${e.id}</span></div>
-       <div style="font-size:.8rem;color:var(--ink-soft);margin-top:2px">${e.ts} · ${e.by.name} (${e.by.role})</div>
+       <div style="font-weight:600;font-size:.9rem"><span class="mono">${e.extractionId}</span></div>
+       <div style="font-size:.8rem;color:var(--ink-soft);margin-top:2px">${fmtTs(e.generatedAt)} · <span class="mono">${e.requestedBy.id}</span> (${e.requestedBy.role})</div>
       </div>
       <div style="text-align:right;font-size:.8rem">${status}</div>
      </div>
      <div style="font-size:.8rem;color:var(--ink-soft);margin-bottom:8px">
-      📅 ${e.period.from} → ${e.period.to} · ${t("extractionFilters")}: ${e.filters}
+      📅 ${e.request.period.from} → ${e.request.period.to} · ${t("extractionFilters")}: ${fmtFilters(e.request)}
      </div>
      ${actions}
     </div>`;}).join('')}</div>`}
