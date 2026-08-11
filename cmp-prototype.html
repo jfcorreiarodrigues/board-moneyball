@@ -255,7 +255,7 @@ const I18N={
   opExtract:"Solicitar extrações de indicadores",
   opUsers:"Gerir perfis de acesso (utilizadores)", opAudit:"Pesquisar auditoria",
   navUsers:"Gestão de utilizadores",
-  extractions:"Extrações & indicadores", extractionsSub:"Agregados de consentimento por categoria, sub-opção e canal — para relatórios e análises, sem dados ao nível do titular (US-S5.2-07).",
+  extractions:"Extrações & indicadores", extractionsSub:"Agregados de consentimento por finalidade e sub-opção — para relatórios e análises, sem dados ao nível do titular (US-S5.2-07).",
   filtersTitle:"Filtros",periodLabel:"Período:", categoriesLabel:"Categorias:", channelsLabel:"Canais:",
   period30d:"Últimos 30 dias", period90d:"Últimos 90 dias", periodCustom:"Período personalizado",
   requestExtraction:"📊 Solicitar Extração",
@@ -263,7 +263,7 @@ const I18N={
   extractionId:"ID", extractionWhen:"Quando", extractionBy:"Solicitado por", extractionFilters:"Filtros",
   extractionStatus:"Estado", statusCompleted:"✓ Concluída", statusProcessing:"⏳ Processando",
   downloadJSON:"📥 JSON", downloadCSV:"📥 CSV",
-  extractionNote:"Os indicadores agregam consentimentos por categoria, sub-opção e canal. Cada extração fica registada em auditoria. Os dados são segmentados por tenant.",
+  extractionNote:"Os indicadores dizem, por finalidade e sub-opção, quantos titulares têm o consentimento ativo e quantos revogaram. Cada extração fica registada em auditoria e é segmentada por empresa (tenant).",
   noExtractions:"Sem extrações anteriores neste tenant.",
   legalExternalNote:"Os textos legais são geridos no dotCMS. O CMP não gere conteúdos — apenas consulta a versão em vigor.",
   currentVersions:"Versão em vigor por finalidade", stInForce:"Em vigor",
@@ -327,7 +327,7 @@ const I18N={
   opExtract:"Solicitar extracciones de indicadores",
   opUsers:"Gestionar perfiles de acceso (usuarios)", opAudit:"Buscar auditoría",
   navUsers:"Gestión de usuarios",
-  extractions:"Extracciones e indicadores", extractionsSub:"Agregados de consentimiento por categoría, sub-opción y canal — para reportes y análisis, sin datos a nivel del titular (US-S5.2-07).",
+  extractions:"Extracciones e indicadores", extractionsSub:"Agregados de consentimiento por finalidad y sub-opción — para reportes y análisis, sin datos a nivel del titular (US-S5.2-07).",
   filtersTitle:"Filtros",periodLabel:"Período:", categoriesLabel:"Categorías:", channelsLabel:"Canales:",
   period30d:"Últimos 30 días", period90d:"Últimos 90 días", periodCustom:"Período personalizado",
   requestExtraction:"📊 Solicitar Extracción",
@@ -335,7 +335,7 @@ const I18N={
   extractionId:"ID", extractionWhen:"Cuándo", extractionBy:"Solicitado por", extractionFilters:"Filtros",
   extractionStatus:"Estado", statusCompleted:"✓ Completada", statusProcessing:"⏳ Procesando",
   downloadJSON:"📥 JSON", downloadCSV:"📥 CSV",
-  extractionNote:"Los indicadores agregan consentimientos por categoría, sub-opción y canal. Cada extracción queda registrada en auditoría. Los datos están segmentados por tenant.",
+  extractionNote:"Los indicadores dicen, por finalidad y sub-opción, cuántos titulares tienen el consentimiento activo y cuántos revocaron. Cada extracción queda registrada en auditoría y está segmentada por empresa (tenant).",
   noExtractions:"Sin extracciones anteriores en este tenant.",
   legalExternalNote:"Los textos legales se gestionan en dotCMS. El CMP no gestiona contenidos — solo consulta la versión vigente.",
   currentVersions:"Versión vigente por finalidad", stInForce:"Vigente",
@@ -467,59 +467,42 @@ const SUBJECT=[
   {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
   {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-02 · Partilha Telecom",es:"UC-02 · Compartición Telecom"},tipo:"share",lang:"ES"},
 ];
-// Extrações de indicadores (US-S5.2-07) — estrutura alinhada com o contrato de dados:
-// envelope + bloco `metrics` reutilizável em cada nó. Agregados apenas; nunca dados do titular.
-// metrics = {activeAtEnd, revokedAtEnd, grantedInPeriod, revokedInPeriod, netChange, base, coverageRate}
+// Extrações de indicadores (US-S5.2-07) — estrutura alinhada com o contrato de dados.
+// O output é um ficheiro com contagens agregadas por finalidade e sub-opção:
+// active = titulares com consentimento ativo · revoked = titulares que revogaram.
+// Agregados apenas; nunca dados ao nível do titular.
 const EXTRACTIONS={
  "CTT":[
-  {extractionId:"EXT-2026-0847",schemaVersion:"1.0",tenant:"CTT",
-   generatedAt:"2026-08-11T14:30:12Z",
-   requestedBy:{type:"user",id:"carlos.santos@ctt.pt",role:"Marketing_Analitico"},
-   request:{period:{from:"2026-08-01",to:"2026-08-31"},categories:["UC-01","UC-02"],channels:["email","sms","push"]},
-   suppression:{minThreshold:100,suppressedCount:1},
-   status:"completed",
-   data:{
-    summary:{activeAtEnd:45230,revokedAtEnd:6770,grantedInPeriod:4200,revokedInPeriod:1850,netChange:2350,base:52000,coverageRate:0.8698},
-    byCategory:[
-      {code:"UC-01",name:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},
-       metrics:{activeAtEnd:38920,revokedAtEnd:6310,grantedInPeriod:2600,revokedInPeriod:1010,netChange:1590,base:52000,coverageRate:0.7485},
-       bySubOption:[
-        {id:"prod",name:{pt:"Produtos e serviços",es:"Productos y servicios"},metrics:{activeAtEnd:36000,revokedAtEnd:2100,grantedInPeriod:1400,revokedInPeriod:420,netChange:980,base:52000,coverageRate:0.6923}},
-        {id:"promo",name:{pt:"Promoções",es:"Promociones"},metrics:{activeAtEnd:25000,revokedAtEnd:3210,grantedInPeriod:900,revokedInPeriod:510,netChange:390,base:52000,coverageRate:0.4808}}
-       ],
-       byChannel:[
-        {channel:"email",metrics:{activeAtEnd:22000,revokedAtEnd:1500}},
-        {channel:"sms",metrics:{activeAtEnd:8920,revokedAtEnd:800}},
-        {channel:"push",metrics:{activeAtEnd:7000,revokedAtEnd:1010}}
-       ]},
-      {code:"UC-02",name:{pt:"Partilha Telecom",es:"Compartición Telecom"},
-       metrics:{activeAtEnd:28900,revokedAtEnd:3200,grantedInPeriod:1600,revokedInPeriod:840,netChange:760,base:52000,coverageRate:0.5558},
-       bySubOption:[
-        {id:"telecom",name:{pt:"Telecomunicações",es:"Telecomunicaciones"},metrics:{activeAtEnd:28900,revokedAtEnd:2100,grantedInPeriod:1600,revokedInPeriod:540,netChange:1060,base:52000,coverageRate:0.5558}},
-        {id:"seguros",name:{pt:"Seguros",es:"Seguros"},metrics:{activeAtEnd:12000,revokedAtEnd:1100,grantedInPeriod:400,revokedInPeriod:300,netChange:100,base:52000,coverageRate:0.2308}}
-       ],
-       byChannel:[
-        {channel:"email",metrics:{activeAtEnd:15000,revokedAtEnd:800}},
-        {channel:"sms",metrics:{activeAtEnd:13900,revokedAtEnd:2400}}
-       ]}
-    ],
-    suppressedNodes:[{level:"subOption",key:"UC-05/vantagens",reason:"below_min_threshold",threshold:100}]
-   }},
-  {extractionId:"EXT-2026-0820",schemaVersion:"1.0",tenant:"CTT",
-   generatedAt:"2026-08-08T10:15:00Z",
-   requestedBy:{type:"user",id:"joao.rodrigues@ctt.pt",role:"DPO_Admin"},
-   request:{period:{from:"2026-07-01",to:"2026-07-31"},categories:["UC-01"],channels:[]},
-   suppression:{minThreshold:100,suppressedCount:0},
-   status:"completed",
-   data:{summary:{activeAtEnd:41200,revokedAtEnd:10800,grantedInPeriod:3100,revokedInPeriod:2200,netChange:900,base:52000,coverageRate:0.7923}}}
+  {extractionId:"EXT-2026-0847",tenant:"CTT",generatedAt:"2026-08-11T14:30:12Z",
+   requestedBy:{id:"carlos.santos@ctt.pt",role:"Marketing_Analitico"},
+   period:{from:"2026-08-01",to:"2026-08-31"},categories:["UC-01","UC-02"],
+   minThreshold:100,status:"completed",base:52000,
+   results:[
+     {category:"UC-01",name:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},active:38920,revoked:6310,
+      subOptions:[
+        {id:"prod",name:{pt:"Produtos e serviços",es:"Productos y servicios"},active:36000,revoked:2100},
+        {id:"promo",name:{pt:"Promoções",es:"Promociones"},active:25000,revoked:3210}
+      ]},
+     {category:"UC-02",name:{pt:"Partilha com parceiros",es:"Compartición con socios"},active:28900,revoked:3200,
+      subOptions:[
+        {id:"telecom",name:{pt:"Telecomunicações",es:"Telecomunicaciones"},active:28900,revoked:2100},
+        {id:"seguros",name:{pt:"Seguros",es:"Seguros"},active:12000,revoked:1100}
+      ]}
+   ],
+   suppressed:[{category:"UC-05",subOption:"vantagens",reason:"below_min_threshold"}]},
+  {extractionId:"EXT-2026-0820",tenant:"CTT",generatedAt:"2026-08-08T10:15:00Z",
+   requestedBy:{id:"joao.rodrigues@ctt.pt",role:"DPO_Admin"},
+   period:{from:"2026-07-01",to:"2026-07-31"},categories:["UC-01"],
+   minThreshold:100,status:"completed",base:52000,
+   results:[
+     {category:"UC-01",name:{pt:"Comunicações comerciais",es:"Comunicaciones comerciales"},active:41200,revoked:10800,subOptions:[]}
+   ],suppressed:[]}
  ],
  "CTT Express":[
-  {extractionId:"EXT-2026-0835",schemaVersion:"1.0",tenant:"CTT Express",
-   generatedAt:null,
-   requestedBy:{type:"user",id:"carlos.santos@ctt.pt",role:"Marketing_Analitico"},
-   request:{period:{from:"2026-08-01",to:"2026-08-31"},categories:["UC-01","UC-02"],channels:[]},
-   suppression:{minThreshold:100,suppressedCount:0},
-   status:"processing",data:null}
+  {extractionId:"EXT-2026-0835",tenant:"CTT Express",generatedAt:null,
+   requestedBy:{id:"carlos.santos@ctt.pt",role:"Marketing_Analitico"},
+   period:{from:"2026-08-01",to:"2026-08-31"},categories:["UC-01","UC-02"],
+   minThreshold:100,status:"processing",base:null,results:null,suppressed:[]}
  ],
 };
 // Catálogo de consentimentos (vista de cliente): categoria -> sub-opções + texto legal em vigor
@@ -805,20 +788,18 @@ const VIEWS={
   <div class="note">${t("permsNote")}</div>${edit?`<div class="note">🔒 ${t("permsFixed")}</div>`:''}`;
  },
  extractions(){
-  const exts=(EXTRACTIONS[state.tenant]||[]).slice().sort((a,b)=>String(b.generatedAt||b.request.period.to).localeCompare(String(a.generatedAt||a.request.period.to)));
-  const cats=CONSENT_CAT[state.tenant]||[],chs=["email","sms","push","letter"];
+  const exts=(EXTRACTIONS[state.tenant]||[]).slice().sort((a,b)=>String(b.generatedAt||b.period.to).localeCompare(String(a.generatedAt||a.period.to)));
+  const cats=CONSENT_CAT[state.tenant]||[];
   const fmtTs=iso=>iso?iso.slice(0,16).replace("T"," ")+" UTC":"—";
-  const fmtFilters=req=>{const c=(req.categories&&req.categories.length)?req.categories.join(", "):"todas";return c;};
+  const fmtFilters=e=>(e.categories&&e.categories.length)?e.categories.join(", "):"todas";
   return head(t("extractions"),t("extractionsSub"),t("secAnalytics")+" / "+t("extractions"))
   +`<div class="req-inline"><span class="us">US-S5.2-07</span></div>
   <div class="card" style="padding:16px 18px;margin-bottom:14px">
-   <div class="grid g3" style="gap:12px;margin-bottom:12px">
+   <div class="grid g2" style="gap:12px;margin-bottom:12px">
     <div class="field"><label>${t("periodLabel")}</label>
      <select><option>${t("period30d")}</option><option>${t("period90d")}</option><option>${t("periodCustom")}</option></select></div>
     <div class="field"><label>${t("categoriesLabel")}</label>
      <input placeholder="UC-01, UC-02, ..."></div>
-    <div class="field"><label>${t("channelsLabel")}</label>
-     <input placeholder="email, sms, push, letter"></div>
    </div>
    <div style="display:flex;gap:8px;flex-wrap:wrap">${actBtn(t("requestExtraction"),"extractions.view","primary")}</div>
   </div>
@@ -839,7 +820,7 @@ const VIEWS={
       <div style="text-align:right;font-size:.8rem">${status}</div>
      </div>
      <div style="font-size:.8rem;color:var(--ink-soft);margin-bottom:8px">
-      📅 ${e.request.period.from} → ${e.request.period.to} · ${t("extractionFilters")}: ${fmtFilters(e.request)}
+      📅 ${e.period.from} → ${e.period.to} · ${t("extractionFilters")}: ${fmtFilters(e)}
      </div>
      ${actions}
     </div>`;}).join('')}</div>`}
