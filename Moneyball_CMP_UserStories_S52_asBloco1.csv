@@ -1,0 +1,156 @@
+Title,Description,Type,Priority,Workflow name,Lane,Column,PT | Application,Requesting Area
+[Bloco 1 — APIs de ingestão e consulta] Recolha de consentimentos (create por sub-opção),"Como Canal de recolha do ecossistema CTT
+Quero que uma recolha só preencha as sub-opções que o titular ainda não decidiu
+Para poder incorporar o microfrontend numa jornada de recolha sem apagar decisões anteriores do mesmo e-mail
+
+──────── Critérios de Aceitação (BDD) & Regras ────────
+
+Cenário: Happy path — sub-opção ainda não decidida
+Dado que o e-mail do titular não tem decisão registada para uma sub-opção
+Quando a recolha incluir essa sub-opção
+Então o consentimento correspondente deve ser criado
+
+Cenário: Edge case — sub-opção já decidida antes
+Dado que o e-mail do titular já deu consentimento a uma sub-opção numa recolha anterior
+Quando uma nova recolha não incluir essa sub-opção
+Então o consentimento anterior deve manter-se inalterado
+E a ausência dessa sub-opção na recolha não deve ser interpretada como revogação
+
+Cenário: Edge case — sub-opção já recusada antes
+Dado que o e-mail do titular já tinha deixado uma sub-opção por dar
+Quando uma nova recolha voltar a não a incluir
+Então nada deve ser alterado para essa sub-opção
+
+Cenário: Edge case — recolha nunca apaga
+Dado que o titular tem sub-opções ativas e inativas
+Quando submeter uma recolha
+Então nenhuma sub-opção já decidida deve ser apagada ou revogada pela recolha
+
+▸ Regras de negócio a respeitar:
+Na jornada de recolha, cada sub-opção é create-if-absent: só se cria se o e-mail ainda não tiver decisão para essa sub-opção; se já tiver (deu ou não deu), a recolha não a altera.
+A recolha nunca revoga: a omissão de uma sub-opção numa recolha não é revogação.
+A gestão que acrescenta e retira decisões é a jornada da área de cliente (US-S5.2-06), operação distinta desta.
+A avaliação de “já decidiu” é por sub-opção e assenta no e-mail do titular como identificador do consentimento.",Deliverable (FLSA 2),High,Operacional Workflow,,,xxxx,DNI
+[Bloco 1 — APIs de ingestão e consulta] Consulta do estado consolidado,"Como Sistema consumidor do ecossistema CTT
+Quero consultar o estado atual dos consentimentos de um titular
+Para decidir se posso incluí-lo numa campanha ou tratamento
+
+──────── Critérios de Aceitação (BDD) & Regras ────────
+
+Cenário: Happy path — estado por categoria e sub-opção
+Dado que o titular tem consentimentos em várias categorias
+Quando o sistema consultar o seu estado
+Então deve ser devolvido o estado consolidado por categoria e sub-opção
+E cada entrada deve indicar o estado e o timestamp da última decisão
+
+Cenário: Edge case — titular desconhecido
+Dado que o identificador consultado não existe no CMP
+Quando o sistema efetuar a consulta
+Então deve ser devolvida a indicação de titular não encontrado
+E a resposta não deve ser interpretável como autorização de tratamento
+
+▸ Regras de negócio a respeitar:
+A ausência de consentimento nunca equivale a autorização de tratamento.",Deliverable (FLSA 2),High,Operacional Workflow,,,xxxx,DNI
+[Bloco 1 — APIs de ingestão e consulta] Consistência forte após revogação,"Como Responsável pela Proteção de Dados
+Quero que um consentimento revogado deixe de ser devolvido como ativo de imediato
+Para que nenhum sistema continue a tratar dados com base em informação desatualizada
+
+──────── Critérios de Aceitação (BDD) & Regras ────────
+
+Cenário: Happy path — leitura imediata do novo estado
+Dado que o titular revoga um consentimento
+Quando um sistema consultar o estado no instante seguinte à gravação
+Então a finalidade revogada não deve constar como ativa
+
+Cenário: Edge case — expurgo posterior
+Dado que o consentimento foi revogado mas os dados ainda não foram expurgados
+Quando a consulta for efetuada
+Então o consentimento deve ser devolvido como revogado, independentemente do ciclo de expurgo
+
+▸ Regras de negócio a respeitar:
+A consulta é servida com consistência forte relativamente à gravação.",Deliverable (FLSA 2),High,Operacional Workflow,,,xxxx,DNI
+[Bloco 1 — APIs de ingestão e consulta] Reconciliação de cargas em lote,"Como Responsável de canais legados
+Quero submeter ao CMP consentimentos recolhidos em papel dias depois
+Para que a fonte única de verdade reflita também as recolhas presenciais
+
+──────── Critérios de Aceitação (BDD) & Regras ────────
+
+Cenário: Happy path — lote com timestamp de recolha
+Dado que um lote contém consentimentos recolhidos em formulário físico
+E cada registo indica o timestamp original da recolha
+Quando o lote for submetido ao CMP
+Então cada registo deve ser avaliado pelo seu timestamp de recolha, não pelo momento da submissão
+
+Cenário: Edge case — decisão do titular posterior à do lote
+Dado que o titular alterou a sua decisão no microsite depois da data do formulário físico
+Quando o lote for processado
+Então a decisão do microsite deve prevalecer por ser mais recente
+E o registo do formulário físico deve ficar no histórico sem alterar o estado vigente
+
+Cenário: Edge case — lote sem timestamp de recolha
+Dado que um registo do lote não indica o timestamp de recolha
+Quando for processado
+Então deve ser rejeitado para tratamento manual
+E não deve ser assumido o momento da submissão como data de recolha
+
+▸ Regras de negócio a respeitar:
+A regra Most Recent Wins compara sempre timestamps de recolha.",Deliverable (FLSA 2),Average,Operacional Workflow,,,xxxx,DNI
+[Bloco 1 — APIs de ingestão e consulta] Gestão de preferências (update com acrescentar e retirar),"Como Cliente dos CTT
+Quero acrescentar ou retirar consentimentos a partir das jornadas de gestão
+Para controlar as minhas decisões depois da recolha inicial
+
+──────── Critérios de Aceitação (BDD) & Regras ────────
+
+Cenário: Happy path — acrescentar consentimento
+Dado que o titular acede à gestão de preferências na área de cliente ou na app
+Quando ativar uma sub-opção que não tinha
+Então o consentimento correspondente deve ser criado
+
+Cenário: Happy path — retirar consentimento
+Dado que o titular tem uma sub-opção ativa
+Quando a desativar na gestão de preferências
+Então esse consentimento deve ser revogado
+
+Cenário: Edge case — retirada é sempre explícita
+Dado que o titular altera apenas uma sub-opção na gestão de preferências
+Quando submeter a alteração
+Então apenas a sub-opção alterada deve mudar de estado
+E as restantes devem permanecer como estavam
+
+▸ Regras de negócio a respeitar:
+A gestão de preferências é a única operação que pode revogar um consentimento por decisão do titular.
+Cada alteração afeta apenas as sub-opções explicitamente mudadas pelo titular.
+É uma operação distinta da recolha inicial (US-S5.2-01), com semântica própria.",Deliverable (FLSA 2),High,Operacional Workflow,,,xxxx,DNI
+[Bloco 1 — APIs de ingestão e consulta] Indicadores agregados de consentimento,"Como equipa de marketing analítico
+Quero receber periodicamente um ficheiro com os indicadores agregados de consentimento
+Para alimentar os reportes de gestão sem consultar o CMP a cada utilização
+
+──────── Critérios de Aceitação (BDD) & Regras ────────
+
+Cenário: Happy path — extração periódica
+Dado que está configurada uma periodicidade de extração para o tenant ""CTT""
+Quando o processo de extração for executado
+Então deve ser produzido um ficheiro com os agregados por categoria, sub-opção e canal
+E o ficheiro deve identificar o período abrangido e o momento a que os valores respeitam
+
+Cenário: Happy path — extração a pedido
+Dado que um sistema autorizado pede uma extração para um período
+Quando o pedido for aceite
+Então a extração deve ser produzida e disponibilizada a esse sistema
+
+Cenário: Edge case — agregados abaixo do limiar mínimo
+Dado que alguns agregados abrangem menos titulares do que o limiar mínimo
+Quando a extração for produzida
+Então esses valores devem sair suprimidos, com indicação do motivo
+
+Cenário: Edge case — pedido de detalhe individual
+Dado que é pedida uma extração ao nível do titular
+Quando o pedido for submetido
+Então deve ser recusado
+E a tentativa deve ficar registada no log de acessos (US-S5.1-03)
+
+▸ Regras de negócio a respeitar:
+A extração nunca contém dados ao nível do titular.
+Os indicadores não são apresentados no Frontend do CMP: o acesso faz-se por API ou por extração.
+Cada extração fica registada no log de auditoria, com o sistema requerente, os filtros e o momento.
+A extração respeita o tenant do sistema a que se destina.",Deliverable (FLSA 2),Average,Operacional Workflow,,,xxxx,DNI
