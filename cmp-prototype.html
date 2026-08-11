@@ -261,7 +261,7 @@ const I18N={
   users:"Gestão de utilizadores", usersSub:"Gestão dos perfis de acesso ao CMP dos utilizadores internos, por empresa (tenant). Da responsabilidade do DPO_Admin.",
   usersTitle:"Utilizadores e perfis de acesso", inviteUser:"+ Convidar utilizador", changeProfile:"Alterar perfil",
   noProfile:"Sem perfil", colTenant:"Empresa (tenant)",
-  usersNote:"Os perfis (DPO_Admin, Business_Admin, Security_Auditor) determinam o que cada utilizador pode fazer no CMP. A atribuição é por tenant e fica registada em auditoria.",
+  usersNote:"Os perfis (DPO_Admin, Consulta_Geral, Marketing_Analitico) determinam o que cada utilizador pode fazer no CMP. A atribuição é por tenant e fica registada em auditoria.",
  },
  es:{
   brandTitle:"Gestión de Consentimientos", brandSub:"Frontend interno · Grupo CTT",
@@ -322,7 +322,7 @@ const I18N={
   users:"Gestión de usuarios", usersSub:"Gestión de los perfiles de acceso al CMP de los usuarios internos, por empresa (tenant). Responsabilidad del DPO_Admin.",
   usersTitle:"Usuarios y perfiles de acceso", inviteUser:"+ Invitar usuario", changeProfile:"Cambiar perfil",
   noProfile:"Sin perfil", colTenant:"Empresa (tenant)",
-  usersNote:"Los perfiles (DPO_Admin, Business_Admin, Security_Auditor) determinan lo que cada usuario puede hacer en el CMP. La asignación es por tenant y queda registrada en auditoría.",
+  usersNote:"Los perfiles (DPO_Admin, Consulta_Geral, Marketing_Analitico) determinan lo que cada usuario puede hacer en el CMP. La asignación es por tenant y queda registrada en auditoría.",
  }
 };
 const t=(k)=> (I18N[state.lang] && I18N[state.lang][k]!=null) ? I18N[state.lang][k] : (I18N.pt[k]!=null?I18N.pt[k]:k);
@@ -331,18 +331,18 @@ const L=(o)=> (o&&o[state.lang]!=null)?o[state.lang]:(o&&o.pt!=null?o.pt:o);
 /* ============ dados ============ */
 const ROLES={
   DPO_Admin:{person:"João Rodrigues",initials:"JR",desc:{pt:"Responsável pela Proteção de Dados",es:"Responsable de Protección de Datos"}},
-  Business_Admin:{person:"Marta Antunes",initials:"MA",desc:{pt:"Gestor de negócio",es:"Gestor de negocio"}},
-  Security_Auditor:{person:"Rui Marques",initials:"RM",desc:{pt:"Auditor de Segurança",es:"Auditor de Seguridad"}},
+  Consulta_Geral:{person:"Maria Silva",initials:"MS",desc:{pt:"Gestor de Consultas",es:"Gestor de Consultas"}},
+  Marketing_Analitico:{person:"Carlos Santos",initials:"CS",desc:{pt:"Analista de Marketing",es:"Analista de Marketing"}},
 };
 const PERMS={
   // Textos legais: geridos fora da plataforma -> apenas leitura da versão em vigor
-  "legal.view":["DPO_Admin","Business_Admin","Security_Auditor"],
-  "catalog.view":["DPO_Admin","Business_Admin"],
-  "subject.view":["DPO_Admin","Security_Auditor"],
+  "legal.view":["DPO_Admin","Consulta_Geral","Marketing_Analitico"],
+  "catalog.view":["DPO_Admin","Marketing_Analitico"],
+  "subject.view":["DPO_Admin","Consulta_Geral"],
   // DPO_Admin: edita os consentimentos de um titular e gere os perfis de acesso ao CMP
   "subject.edit":["DPO_Admin"],"users.manage":["DPO_Admin"],
-  "audit.view":["DPO_Admin","Security_Auditor"],
-  "perms.view":["DPO_Admin","Business_Admin","Security_Auditor"],
+  "audit.view":["DPO_Admin","Consulta_Geral"],
+  "perms.view":["DPO_Admin","Consulta_Geral","Marketing_Analitico"],
   "perms.manage":["DPO_Admin"], // US-S2.1-14: DPO gere a matriz operação × perfil
 };
 // alterna uma célula operação × perfil (US-S2.1-14). Perfis são fixos; só as capacidades mudam.
@@ -365,13 +365,13 @@ const LEGAL={
  "CTT":[
   {cat:"UC-01",name:{pt:"Comunicações comerciais CTT",es:"Comunicaciones comerciales CTT"},ver:"v1.1.0",status:"Ativo",by:"DPO_Admin",langs:"PT · ES"},
   {cat:"UC-02",name:{pt:"Partilha com parceiros · Telecom",es:"Compartición con socios · Telecom"},ver:"v1.0.0",status:"Ativo",by:"DPO_Admin",langs:"PT · ES"},
-  {cat:"UC-03",name:{pt:"Personalização de ofertas",es:"Personalización de ofertas"},ver:"v0.4.0",status:"Pendente",by:"Business_Admin",langs:"PT · ES"},
-  {cat:"UC-04",name:{pt:"Estudos de mercado",es:"Estudios de mercado"},ver:"v0.2.0",status:"Rascunho",by:"Business_Admin",langs:"PT"},
+  {cat:"UC-03",name:{pt:"Personalização de ofertas",es:"Personalización de ofertas"},ver:"v0.4.0",status:"Pendente",by:"DPO_Admin",langs:"PT · ES"},
+  {cat:"UC-04",name:{pt:"Estudos de mercado",es:"Estudios de mercado"},ver:"v0.2.0",status:"Rascunho",by:"DPO_Admin",langs:"PT"},
   {cat:"UC-01",name:{pt:"Comunicações comerciais CTT",es:"Comunicaciones comerciales CTT"},ver:"v1.0.0",status:"Arquivado",by:"DPO_Admin",langs:"PT · ES"},
  ],
  "CTT Express":[
   {cat:"UC-01",name:{pt:"Comunicações · CTT Express",es:"Comunicaciones · CTT Express"},ver:"v1.0.0",status:"Ativo",by:"DPO_Admin",langs:"PT · ES"},
-  {cat:"UC-02",name:{pt:"Partilha logística · parceiros",es:"Compartición logística · socios"},ver:"v0.3.0",status:"Rascunho",by:"Business_Admin",langs:"PT"},
+  {cat:"UC-02",name:{pt:"Partilha logística · parceiros",es:"Compartición logística · socios"},ver:"v0.3.0",status:"Rascunho",by:"DPO_Admin",langs:"PT"},
  ],
 };
 const CATS={
@@ -396,16 +396,16 @@ const AUDIT={
   {ts:"2026-08-10 11:47",user:"João Rodrigues",role:"DPO_Admin",ref:"",
    op:{pt:"Consultou o histórico de consentimentos de cliente.exemplo@ctt.pt",
        es:"Consultó el historial de consentimientos de cliente.exemplo@ctt.pt"}},
-  {ts:"2026-08-09 17:05",user:"Rui Marques",role:"Security_Auditor",ref:"",
+  {ts:"2026-08-09 17:05",user:"Maria Silva",role:"Consulta_Geral",ref:"",
    op:{pt:"Pesquisou o diário de auditoria — últimos 30 dias",
        es:"Buscó en el diario de auditoría — últimos 30 días"}},
   {ts:"2026-08-09 09:30",user:"João Rodrigues",role:"DPO_Admin",ref:"ana.sousa@cttexpress.com",
-   op:{pt:"Atribuiu o perfil Business_Admin a um utilizador interno",
-       es:"Asignó el perfil Business_Admin a un usuario interno"}},
-  {ts:"2026-08-08 16:20",user:"João Rodrigues",role:"DPO_Admin",ref:"subject.view · Security_Auditor",
-   op:{pt:"Ativou a operação «Consultar titular» para o perfil Security_Auditor",
-       es:"Activó la operación «Consultar titular» para el perfil Security_Auditor"}},
-  {ts:"2026-08-08 10:02",user:"Marta Antunes",role:"Business_Admin",ref:"",
+   op:{pt:"Atribuiu o perfil Consulta_Geral a um utilizador interno",
+       es:"Asignó el perfil Consulta_Geral a un usuario interno"}},
+  {ts:"2026-08-08 16:20",user:"João Rodrigues",role:"DPO_Admin",ref:"subject.view · Consulta_Geral",
+   op:{pt:"Ativou a operação «Consultar titular» para o perfil Consulta_Geral",
+       es:"Activó la operación «Consultar titular» para el perfil Consulta_Geral"}},
+  {ts:"2026-08-08 10:02",user:"Carlos Santos",role:"Marketing_Analitico",ref:"",
    op:{pt:"Consultou o catálogo de finalidades e parceiros",
        es:"Consultó el catálogo de finalidades y socios"}},
   {ts:"2026-08-07 14:15",user:"João Rodrigues",role:"DPO_Admin",ref:"",
@@ -415,10 +415,10 @@ const AUDIT={
   {ts:"2026-08-10 12:40",user:"João Rodrigues",role:"DPO_Admin",ref:"REQ-2026-000131 · Balcão",
    op:{pt:"Revogou UC-02 · Parceiros logísticos em nome do titular",
        es:"Revocó UC-02 · Socios logísticos en nombre del titular"}},
-  {ts:"2026-08-09 15:18",user:"Rui Marques",role:"Security_Auditor",ref:"",
+  {ts:"2026-08-09 15:18",user:"Maria Silva",role:"Consulta_Geral",ref:"",
    op:{pt:"Pesquisou o diário de auditoria — últimos 7 dias",
        es:"Buscó en el diario de auditoría — últimos 7 días"}},
-  {ts:"2026-08-08 11:05",user:"Ana Sousa",role:"Business_Admin",ref:"UC-01 v1.0.0 · dotCMS",
+  {ts:"2026-08-08 11:05",user:"Carlos Santos",role:"Marketing_Analitico",ref:"UC-01 v1.0.0 · dotCMS",
    op:{pt:"Consultou o texto legal em vigor",es:"Consultó el texto legal vigente"}},
  ],
 };
@@ -626,9 +626,9 @@ const VIEWS={
  users(){
   const USERS=[
    {name:"João Rodrigues",email:"joao.rodrigues@ctt.pt",role:"DPO_Admin",tenant:"CTT · CTT Express"},
-   {name:"Marta Antunes",email:"marta.antunes@ctt.pt",role:"Business_Admin",tenant:"CTT"},
-   {name:"Rui Marques",email:"rui.marques@ctt.pt",role:"Security_Auditor",tenant:"CTT · CTT Express"},
-   {name:"Ana Sousa",email:"ana.sousa@cttexpress.com",role:"Business_Admin",tenant:"CTT Express"},
+   {name:"Maria Silva",email:"maria.silva@ctt.pt",role:"Consulta_Geral",tenant:"CTT"},
+   {name:"Carlos Santos",email:"carlos.santos@ctt.pt",role:"Marketing_Analitico",tenant:"CTT · CTT Express"},
+   {name:"Beatriz Costa",email:"beatriz.costa@cttexpress.com",role:"Consulta_Geral",tenant:"CTT Express"},
    {name:"Pedro Lima",email:"pedro.lima@ctt.pt",role:"—",tenant:"—"},
   ];
   return head(t("users"),t("usersSub"),t("secGov")+" / "+t("users"))
