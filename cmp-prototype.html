@@ -173,6 +173,19 @@ tbody tr:hover{background:var(--surface-2)}
 .ctext-h{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;margin-bottom:5px;display:flex;gap:8px;align-items:center}
 .csubs{padding:6px 12px 12px 42px;background:var(--surface-2);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
 .csub{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9rem}
+/* histórico de decisões — meta-linha (canal + autor) */
+.hmeta{font-size:.78rem;color:var(--ink-soft);margin-top:3px;display:flex;flex-wrap:wrap;gap:.5em;align-items:center}
+.hmeta .pill{font-size:.68rem}
+.pill.dpo{background:var(--accent-soft);color:var(--accent-strong)}
+.hcat{font-family:var(--mono);font-size:.72rem;color:var(--accent-strong);background:var(--accent-soft);padding:.05em .45em;border-radius:5px}
+/* marcador de campo obrigatório */
+.reqmark{color:var(--danger);font-weight:800}
+.reqtag{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--danger);background:var(--danger-soft);border:1px solid color-mix(in srgb,var(--danger) 30%,transparent);border-radius:5px;padding:.05em .4em;margin-left:.4em}
+/* zona de upload de evidência */
+.uploadzone{display:flex;align-items:center;gap:9px;border:1.5px dashed var(--danger);background:var(--danger-soft);border-radius:8px;padding:.55em .7em;cursor:pointer;color:var(--ink);font-size:.86rem;font-weight:600;transition:background .12s}
+.uploadzone:hover{background:color-mix(in srgb,var(--danger-soft) 70%,var(--surface))}
+.uploadzone .upic{font-size:1rem}
+.uploadzone small{display:block;font-weight:400;color:var(--ink-soft);font-size:.72rem}
 </style>
 
 <section id="login">
@@ -277,8 +290,10 @@ const I18N={
   cViewText:"Ver texto em vigor", cHideText:"Ocultar texto", cInForce:"Texto em vigor",
   obRevokeOnly:"Em nome do titular, um terceiro só pode retirar consentimentos, nunca conceder (US-S1.2-09). Podes desmarcar para revogar; conceder está bloqueado.",
   obTitle:"Origem e prova do pedido", obChannel:"Canal de origem", obRef:"Referência do pedido",
-  obReq:"Obrigatório: nenhuma revogação em nome do titular é aplicada sem canal de origem e referência do pedido (US-S2.1-11).",
-  chPhone:"Telefone", chDesk:"Balcão", chEmail:"E-mail", chLetter:"Carta",
+  obEvidence:"Documento de evidência", obEvidenceHint:"Anexa o comprovativo do pedido (e-mail, carta digitalizada, registo de chamada).", obEvidenceBtn:"Carregar ficheiro", obEvidenceReq:"obrigatório",
+  obReq:"Obrigatório: nenhuma revogação em nome do titular é aplicada sem canal de origem, referência do pedido e documento de evidência (US-S2.1-11).",
+  chPhone:"Telefone", chDesk:"Balcão", chEmail:"E-mail", chLetter:"Carta", chMicrosite:"Microsite", chApp:"App",
+  histVia:"via", byClient:"Titular", byDpo:"DPO em nome do titular",
   revokeAllComm:"Revogar todas as comunicações", revokeCat:"Revogar", grantBlocked:"Conceder está bloqueado — só o próprio titular pode conceder.",
   editable:"Editável", cellToggle:"Clicar para ativar/desativar",
   permsEditNote:"O DPO_Admin ativa/desativa cada operação por perfil; a alteração vigora de imediato e fica registada em auditoria (US-S2.1-14).",
@@ -351,8 +366,10 @@ const I18N={
   cViewText:"Ver texto vigente", cHideText:"Ocultar texto", cInForce:"Texto vigente",
   obRevokeOnly:"En nombre del titular, un tercero solo puede retirar consentimientos, nunca conceder (US-S1.2-09). Puedes desmarcar para revocar; conceder está bloqueado.",
   obTitle:"Origen y prueba de la solicitud", obChannel:"Canal de origen", obRef:"Referencia de la solicitud",
-  obReq:"Obligatorio: ninguna revocación en nombre del titular se aplica sin canal de origen y referencia de la solicitud (US-S2.1-11).",
-  chPhone:"Teléfono", chDesk:"Oficina", chEmail:"Correo", chLetter:"Carta",
+  obEvidence:"Documento de evidencia", obEvidenceHint:"Adjunta el comprobante de la solicitud (correo, carta digitalizada, registro de llamada).", obEvidenceBtn:"Subir archivo", obEvidenceReq:"obligatorio",
+  obReq:"Obligatorio: ninguna revocación en nombre del titular se aplica sin canal de origen, referencia de la solicitud y documento de evidencia (US-S2.1-11).",
+  chPhone:"Teléfono", chDesk:"Oficina", chEmail:"Correo", chLetter:"Carta", chMicrosite:"Microsite", chApp:"App",
+  histVia:"vía", byClient:"Titular", byDpo:"DPO en nombre del titular",
   revokeAllComm:"Revocar todas las comunicaciones", revokeCat:"Revocar", grantBlocked:"Conceder está bloqueado — solo el propio titular puede conceder.",
   editable:"Editable", cellToggle:"Clic para activar/desactivar",
   permsEditNote:"El DPO_Admin activa/desactiva cada operación por perfil; el cambio se aplica de inmediato y queda registrado en auditoría (US-S2.1-14).",
@@ -464,10 +481,14 @@ const AUDIT={
    op:{pt:"Consultou o texto legal em vigor",es:"Consultó el texto legal vigente"}},
  ],
 };
+// Histórico ao nível da SUB-OPÇÃO (não da categoria), com canal e autor da ação
+// (by: "client" = o próprio titular · "dpo" = DPO_Admin em nome do titular, com referência)
 const SUBJECT=[
-  {ts:"2026-07-15 18:30",act:"revoked",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
-  {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-01 · Produtos e serviços",es:"UC-01 · Productos y servicios"},tipo:"comm",lang:"PT"},
-  {ts:"2026-07-01 10:00",act:"granted",fin:{pt:"UC-02 · Partilha Telecom",es:"UC-02 · Compartición Telecom"},tipo:"share",lang:"ES"},
+  {ts:"2026-08-10 15:12",act:"revoked",cat:"UC-01",sub:{pt:"Promoções e campanhas",es:"Promociones y campañas"},tipo:"comm",lang:"PT",channel:"phone",by:"dpo",ref:"REQ-2026-000123"},
+  {ts:"2026-07-20 09:20",act:"granted",cat:"UC-01",sub:{pt:"Newsletter periódica",es:"Boletín periódico"},tipo:"comm",lang:"PT",channel:"app",by:"client"},
+  {ts:"2026-07-01 10:00",act:"granted",cat:"UC-01",sub:{pt:"Produtos e serviços CTT",es:"Productos y servicios CTT"},tipo:"comm",lang:"PT",channel:"microsite",by:"client"},
+  {ts:"2026-07-01 10:00",act:"granted",cat:"UC-01",sub:{pt:"Promoções e campanhas",es:"Promociones y campañas"},tipo:"comm",lang:"PT",channel:"microsite",by:"client"},
+  {ts:"2026-07-01 10:00",act:"granted",cat:"UC-02",sub:{pt:"Parceiros de telecomunicações",es:"Socios de telecomunicaciones"},tipo:"share",lang:"ES",channel:"microsite",by:"client"},
 ];
 // Extrações de indicadores (US-S5.2-07) — estrutura alinhada com o contrato de dados.
 // O output é um ficheiro com contagens agregadas por finalidade e sub-opção:
@@ -637,11 +658,15 @@ function renderConsentEditor(){
    <div class="note" style="margin:0 0 12px">⚠️ ${t("obRevokeOnly")}</div>
    <div class="card" style="padding:12px 14px;margin-bottom:14px;box-shadow:none">
      <div class="ctext-h" style="margin-bottom:8px">🧾 ${t("obTitle")} <span class="us">US-S2.1-11</span></div>
-     <div class="grid g3">
-       <div class="field" style="margin:0"><label>${t("obChannel")} *</label>
+     <div class="grid g2" style="margin-bottom:12px">
+       <div class="field" style="margin:0"><label>${t("obChannel")} <span class="reqmark">*</span></label>
          <select><option>${t("chPhone")}</option><option>${t("chDesk")}</option><option>${t("chEmail")}</option><option>${t("chLetter")}</option></select></div>
-       <div class="field" style="margin:0"><label>${t("obRef")} *</label><input placeholder="REQ-2026-000123"></div>
-       <div class="field" style="margin:0"><label>${t("colWhen")} *</label><input value="2026-08-11"></div>
+       <div class="field" style="margin:0"><label>${t("colWhen")} <span class="reqmark">*</span></label><input value="2026-08-11"></div>
+     </div>
+     <div class="grid g2">
+       <div class="field" style="margin:0"><label>${t("obRef")} <span class="reqmark">*</span></label><input placeholder="REQ-2026-000123"></div>
+       <div class="field" style="margin:0"><label>${t("obEvidence")} <span class="reqtag">${t("obEvidenceReq")}</span></label>
+         <label class="uploadzone"><input type="file" style="display:none"><span class="upic">📎</span><span>${t("obEvidenceBtn")}<small>${t("obEvidenceHint")}</small></span></label></div>
      </div>
      <div class="note" style="margin-top:8px">${t("obReq")}</div>
    </div>
@@ -737,8 +762,14 @@ const VIEWS={
      <button class="btn primary">${t("consult")}</button>
    </div></div><div style="height:16px"></div>
    <div class="card panel"><h3>${t("history")} · <span class="mono">cliente.exemplo@ctt.pt</span> · 🏢 ${state.tenant}</h3><div class="body">
-     <div class="tl">${SUBJECT.map(s=>`<div class="item"><div class="when">${s.ts} · <span class="pill mute">${s.lang}</span></div>
-        <div><strong style="color:${s.act==='revoked'?'var(--danger)':'var(--ok)'}">${s.act==='revoked'?t("revoked"):t("granted")}</strong> — ${L(s.fin)} ${tipo(s.tipo)}</div></div>`).join("")}</div>
+     <div class="tl">${SUBJECT.map(s=>{
+        const chLabel=t({phone:"chPhone",desk:"chDesk",email:"chEmail",letter:"chLetter",microsite:"chMicrosite",app:"chApp"}[s.channel]||"chMicrosite");
+        const actor=s.by==="dpo"
+          ? `<span class="pill dpo">👤 ${t("byDpo")}</span>${s.ref?` <span class="mono" style="font-size:.72rem">${s.ref}</span>`:""}`
+          : `<span class="pill mute">🙋 ${t("byClient")}</span>`;
+        return `<div class="item"><div class="when">${s.ts} · <span class="pill mute">${s.lang}</span></div>
+        <div><strong style="color:${s.act==='revoked'?'var(--danger)':'var(--ok)'}">${s.act==='revoked'?t("revoked"):t("granted")}</strong> — <span class="hcat">${s.cat}</span> ${L(s.sub)} ${tipo(s.tipo)}</div>
+        <div class="hmeta">${t("histVia")} <strong>${chLabel}</strong> · ${actor}</div></div>`;}).join("")}</div>
      <div class="note">✉️ ${t("emailNote")}</div>
    </div></div>`
    +(canEdit?`<div style="height:16px"></div>
